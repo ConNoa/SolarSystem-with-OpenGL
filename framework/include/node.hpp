@@ -17,7 +17,7 @@ class Node{
     public:
 
         Node();
-        ~Node();
+        Node(string node_name);
 
         shared_ptr<Node>            getParent();
         void                        setParent(shared_ptr<Node> parent);

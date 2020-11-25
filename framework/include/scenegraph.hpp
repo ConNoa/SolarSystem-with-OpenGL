@@ -11,20 +11,20 @@ using namespace std;
 class Scenegraph{
   public:
 
-    Scenegraph();
-    Scenegraph(std::string const& name);
-    ~Scenegraph();
-
     string              getName();
     void                setName(string);
     Node                getRoot();
     void                setRoot(Node);
 
-
     string              printGraph();
 
 
   private:
+
+    Scenegraph();
+    Scenegraph(std::string const& name);
+    ~Scenegraph();
+
     string scene_name_;
     Node root_;
 

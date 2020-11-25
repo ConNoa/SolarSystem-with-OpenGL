@@ -11,8 +11,17 @@ Node::Node():
     worldTransform_{}
 {}
 
-Node::~Node() {
-}
+
+  Node::Node(string node_name):
+      parent_{},
+      children_{},
+      name_{node_name},
+      path_{},
+      depth_{},
+      localTransform_{},
+      worldTransform_{}
+  {}
+
 
 
 shared_ptr<Node> Node::getParent(){

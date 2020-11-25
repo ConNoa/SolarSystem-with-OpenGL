@@ -66,7 +66,7 @@ if(NOT APPLE)
   # add setting whether examples are build
   option(BUILD_EXAMPLES     OFF)
 
-  #if(BUILD_EXAMPLES)
+  if(BUILD_EXAMPLES)
     add_executable(1_fixed application/source/application_fixed.cpp)
     target_link_libraries(1_fixed framework)
 
@@ -84,7 +84,7 @@ if(NOT APPLE)
 
     add_executable(6_vao application/source/application_vao.cpp)
     target_link_libraries(6_vao framework)
-  #endif()
+  endif()
 endif()
 
 # set build type dependent flags
