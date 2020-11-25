@@ -48,12 +48,12 @@ int Node::getDepth(){
     return depth_;
 }
 
-mat4 Node::getLocalTransform(){
+glm::mat4 Node::getLocalTransform(){
     return localTransform_;
 }
 
 void Node::setLocalTransform(mat4 local_transform_input){
-    localTransform_ = matrix_in;
+    localTransform_ = local_transform_input;
 }
 
 glm::mat4 Node::getWorldTransform(){
@@ -61,7 +61,7 @@ glm::mat4 Node::getWorldTransform(){
 }
 
 void Node::setWorldTransform(mat4 world_transf_input){
-    worldTransform_ = matrix_in;
+    worldTransform_ = world_transf_input;
 }
 
 void Node::addChildren(shared_ptr<Node> child){

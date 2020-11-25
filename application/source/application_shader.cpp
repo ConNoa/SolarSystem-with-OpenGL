@@ -6,7 +6,7 @@
 #include "model_loader.hpp"
 
 #include <glbinding/gl/gl.h>
-// use gl definitions from glbinding 
+// use gl definitions from glbinding
 using namespace gl;
 
 //dont load gl bindings from glfw
@@ -20,14 +20,14 @@ using namespace gl;
 ApplicationShader::ApplicationShader(std::string const& resource_path)
  :Application{resource_path}
  ,m_program{0}
-{
-  initializeShaderPrograms();
+  {
+    initializeShaderPrograms();
 
-  glm::fmat4 projection_matrix = utils::calculate_projection_matrix(initial_aspect_ratio);
-  // upload projection matrix
-  glMatrixMode(GL_PROJECTION);
-  glLoadMatrixf(glm::value_ptr(projection_matrix));
-}
+    glm::fmat4 projection_matrix = utils::calculate_projection_matrix(initial_aspect_ratio);
+    // upload projection matrix
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(glm::value_ptr(projection_matrix));
+  }
 
 GLuint createShader(std::string const& file_path, GLenum shader_type) {
   // allocate shader

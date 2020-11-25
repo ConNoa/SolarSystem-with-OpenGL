@@ -4,7 +4,7 @@
 #include "utils.hpp"
 
 #include <glbinding/gl/gl.h>
-// use gl definitions from glbinding 
+// use gl definitions from glbinding
 using namespace gl;
 
 //dont load gl bindings from glfw
@@ -16,13 +16,13 @@ using namespace gl;
 #include <glm/gtc/type_ptr.hpp>
 
 ApplicationUniform::ApplicationUniform(std::string const& resource_path)
- :Application{resource_path}
- ,m_ul_model_view{-1}
- ,m_ul_projection{-1}
- ,m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
-{
-  initializeShaderPrograms();
-}
+   :Application{resource_path}
+   ,m_ul_model_view{-1}
+   ,m_ul_projection{-1}
+   ,m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
+  {
+    initializeShaderPrograms();
+  }
 
 // load shader programs
 void ApplicationUniform::initializeShaderPrograms() {

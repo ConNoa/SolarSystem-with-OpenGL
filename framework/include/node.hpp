@@ -26,9 +26,9 @@ class Node{
         string                      getName();
         string                      getPath();
         int                         getDepth();
-        mat4&                       getLocalTransform();
+        mat4                        getLocalTransform();
         void                        setLocalTransform(mat4 local_transf_input);
-        mat4&                       getWorldTransform();
+        mat4                        getWorldTransform();
         void                        setWorldTransform(mat4 world_transf_input);
         void                        addChildren(shared_ptr<Node> child);
         std::shared_ptr<Node>       removeChildren(string name);

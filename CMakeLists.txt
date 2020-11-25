@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8)
-# allows access to environment variables with the name 
+# allows access to environment variables with the name
 project (OpenGL_Framework)
 
 #set the build type if its not set
@@ -40,7 +40,7 @@ option(GLFW_BUILD_DOCS     OFF)
 option(GLFW_BUILD_EXAMPLES OFF)
 option(GLFW_BUILD_TESTS    OFF)
 option(GLFW_INSTALL        OFF)
-   
+
 # add glfw build system
 add_subdirectory(external/glfw-3.1.1)
 # include glfw headers
@@ -49,7 +49,7 @@ include_directories(external/glfw-3.1.1/include)
 # add glbindings
 add_subdirectory(external/glbinding-2.1.1)
 
-# create framework helper library 
+# create framework helper library
 file(GLOB FRAMEWORK_SOURCES framework/source/*.cpp)
 add_library(framework STATIC ${FRAMEWORK_SOURCES} ${TINYOBJLOADER_SOURCES})
 target_include_directories(framework PUBLIC framework/include)
@@ -66,7 +66,7 @@ if(NOT APPLE)
   # add setting whether examples are build
   option(BUILD_EXAMPLES     OFF)
 
-  if(BUILD_EXAMPLES) 
+  #if(BUILD_EXAMPLES)
     add_executable(1_fixed application/source/application_fixed.cpp)
     target_link_libraries(1_fixed framework)
 
@@ -84,7 +84,7 @@ if(NOT APPLE)
 
     add_executable(6_vao application/source/application_vao.cpp)
     target_link_libraries(6_vao framework)
-  endif()
+  #endif()
 endif()
 
 # set build type dependent flags
