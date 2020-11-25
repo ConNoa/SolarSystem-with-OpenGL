@@ -20,10 +20,10 @@ model obj(std::string const& name, model::attrib_flag_t import_attribs){
 
   if (!err.empty()) {
     if (err[0] == 'W' && err[1] == 'A' && err[2] == 'R') {
-      std::cerr << "tinyobjloader: " << err << std::endl;    
+      std::cerr << "tinyobjloader: " << err << std::endl;
     }
     else {
-      throw std::logic_error("tinyobjloader: " + err);    
+      throw std::logic_error("tinyobjloader: " + err);
     }
   }
 
@@ -154,9 +154,9 @@ std::vector<glm::fvec3> generate_tangents(tinyobj::mesh_t const& model) {
     //                        model.indices[i * 3 + 1],
     //                        model.indices[i * 3 + 2]};
     // access an attribute of xth vert with vector access "attribute[indices[x]]"
-    
+
     // calculate tangent for the triangle and add it to the accumulation tangents of the adjacent vertices
-    // see generate_normals() for similar workflow 
+    // see generate_normals() for similar workflow
   }
   // normalize and orthogonalize accumulated vertex tangents
   for (unsigned i = 0; i < tangents.size(); ++i) {

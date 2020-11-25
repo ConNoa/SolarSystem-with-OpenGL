@@ -9,7 +9,6 @@
 #include "structs.hpp"
 
 using namespace std;
-using namespace glm;
 
 
 //Superclass
@@ -19,30 +18,37 @@ class Node{
         Node();
         Node(string node_name);
 
-        shared_ptr<Node>            getParent();
-        void                        setParent(shared_ptr<Node> parent);
-        shared_ptr<Node>            getChildren(string name);
-        list<shared_ptr<Node>>      getChildrenList();
+        Node*                       getParent();
+        void                        setParent(Node* parent);
+
+        Node*                       getChildren(string name);
+        list<Node*>&                getChildrenList();
+
         string                      getName();
         string                      getPath();
         int                         getDepth();
-        mat4                        getLocalTransform();
-        void                        setLocalTransform(mat4 local_transf_input);
-        mat4                        getWorldTransform();
-        void                        setWorldTransform(mat4 world_transf_input);
-        void                        addChildren(shared_ptr<Node> child);
-        std::shared_ptr<Node>       removeChildren(string name);
+
+        glm::mat4                   getLocalTransform();
+        void                        setLocalTransform(glm::mat4 local_transf_input);
+
+
+        glm::mat4                   getWorldTransform();
+        void                        setWorldTransform(glm::mat4 world_transf_input);
+
+
+        void                        addChildren(Node* child_new);
+        Node*                       removeChildren(string name);
 
 
     private:
 
-        shared_ptr<Node>            parent_;
-        list<shared_ptr<Node>>      children_;
+        Node*                       parent_;
+        list<Node*>                 children_;
         string                      name_;
         string                      path_;
         int                         depth_;
-        mat4                        localTransform_;
-        mat4                        worldTransform_;
+        glm::mat4                   localTransform_;
+        glm::mat4                   worldTransform_;
 
 };
 

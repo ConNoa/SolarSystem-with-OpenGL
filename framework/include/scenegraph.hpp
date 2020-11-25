@@ -4,29 +4,30 @@
 #include <string>
 #include "node.hpp"
 
-using namespace std;
 
 
 
 class Scenegraph{
   public:
 
-    string              getName();
-    void                setName(string);
-    Node                getRoot();
-    void                setRoot(Node);
+    Scenegraph();
+    Scenegraph(std::string name, Node* root_node);
+    ~Scenegraph();
 
-    string              printGraph();
+
+    std::string              getName();
+    Node*                    getRoot();
+    std::string              printGraph();
 
 
   private:
 
-    Scenegraph();
-    Scenegraph(std::string const& name);
-    ~Scenegraph();
+    void                    setName(std::string const& scene_name);
+    void                    setRoot(Node*);
 
-    string scene_name_;
-    Node root_;
+
+    std::string   name_;
+    Node*         root_;
 
 };
 

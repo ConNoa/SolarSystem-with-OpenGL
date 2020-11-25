@@ -1,12 +1,12 @@
 #include "node.hpp"
-
+#include <iostream>
 
 Node::Node():
     parent_{},
-    children_{},
+    children_{std::list<Node*>()},
     name_{},
     path_{},
-    depth_{},
+    depth_{0},
     localTransform_{},
     worldTransform_{}
 {}
@@ -14,34 +14,36 @@ Node::Node():
 
   Node::Node(string node_name):
       parent_{},
-      children_{},
+      children_{std::list<Node*>()},
       name_{node_name},
       path_{},
-      depth_{},
+      depth_{0},
       localTransform_{},
       worldTransform_{}
   {}
 
 
 
-shared_ptr<Node> Node::getParent(){
+Node* Node::getParent(){
     return parent_;
 }
 
-void Node::setParent(shared_ptr<Node> parent){
+void Node::setParent(Node* parent){
     parent_ = parent;
 }
 
-shared_ptr<Node> Node::getChildren(string name){
+Node* Node::getChildren(string name){
     for(auto const& child : this -> getChildrenList()){
         if(child -> getName() == name){
             return child;
         }
     }
-    return nullptr;
-}
+    std::cout<<"ERROR: Could not find Child Node named: "<<name_<<"\n";
+    Node* errornode = new Node("error");
+    return errornode;
+  }
 
-std::list<std::shared_ptr<Node>> Node::getChildrenList(){
+std::list<Node*>& Node::getChildrenList(){
     return children_;
 }
 
@@ -61,7 +63,7 @@ glm::mat4 Node::getLocalTransform(){
     return localTransform_;
 }
 
-void Node::setLocalTransform(mat4 local_transform_input){
+void Node::setLocalTransform(glm::mat4 local_transform_input){
     localTransform_ = local_transform_input;
 }
 
@@ -69,16 +71,16 @@ glm::mat4 Node::getWorldTransform(){
     return worldTransform_;
 }
 
-void Node::setWorldTransform(mat4 world_transf_input){
+void Node::setWorldTransform(glm::mat4 world_transf_input){
     worldTransform_ = world_transf_input;
 }
 
-void Node::addChildren(shared_ptr<Node> child){
-    children_.push_back(child);
+void Node::addChildren(Node* child_new){
+    children_.push_back(child_new);
 }
 
-shared_ptr<Node> Node::removeChildren(string name){
-    shared_ptr<Node> child = getChildren(name);
+Node* Node::removeChildren(string name){
+    Node* child = getChildren(name);
     children_.remove(child);
     return child;
 }
