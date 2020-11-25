@@ -1,0 +1,28 @@
+Rendering Pipeline
+openGL
+
+
+
+
+
+vertex  specification
+
+vertex  shader
+
+Tesselation
+
+geometry shader
+
+
+vertex post processing
+
+
+Primitive Assembly
+
+
+rasterization
+
+Fragment shader
+
+
+per Sample operations
