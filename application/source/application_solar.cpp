@@ -18,11 +18,8 @@ using namespace gl;
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
-#include "node.hpp"
-#include "scenegraph.hpp"
-#include "geometrynode.hpp"
-#include "cameranode.hpp"
-#include "model.hpp"
+
+
 
 ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  :Application{resource_path}
@@ -32,12 +29,9 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
 {
 
   initializeGeometry();
-
   initializeShaderPrograms();
-
   initializeScene();
 
-  render();
 }
 
 ApplicationSolar::~ApplicationSolar() {
@@ -47,33 +41,42 @@ ApplicationSolar::~ApplicationSolar() {
 }
 
 
-void ApplicationSolar::render()  {
-
-  // bind shader to upload uniforms
-  glUseProgram(m_shaders.at("planet").handle);
-
-  for(unsigned int i = 0; i < scene.getRoot()->getChildren("sun")->getChildrenList().size(); i++){
-
-    glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
-    model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f});
-    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
-                       1, GL_FALSE, glm::value_ptr(model_matrix));
-
-    // extra matrix for normal transformation to keep them orthogonal to surface
-    glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
-    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
-                       1, GL_FALSE, glm::value_ptr(normal_matrix));
-
-    // bind the VAO to draw
-    glBindVertexArray(planet_object.vertex_AO);
-
-    // draw bound vertex array using bound shaderscene
-    glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
-  }
-
-
+void ApplicationSolar::render()  const{
+  renderUniverse();
 
 }
+
+void ApplicationSolar::renderUniverse() const{
+    // bind shader to upload uniforms
+    glUseProgram(m_shaders.at("planet").handle);
+
+
+    for(unsigned int i = 0; i < scene.getRoot()->getChildren("sun")->getChildrenList().size(); i++){
+
+      glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
+      model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -3.0f*i});
+      //integrated part
+       model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 0.3f, 0.0f});
+      // glm::fvec3 scale {(9-i)/3, (9-i)/3, (9-i)/3};
+       //model_matrix = glm::scale(model_matrix, scale);
+
+     //integrated parts
+      glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(model_matrix));
+
+      // extra matrix for normal transformation to keep them orthogonal to surface
+      glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
+      glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
+                         1, GL_FALSE, glm::value_ptr(normal_matrix));
+
+      // bind the VAO to draw
+      glBindVertexArray(planet_object.vertex_AO);
+
+      // draw bound vertex array using bound shaderscene
+      glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+   }
+
+}
+
 
 void ApplicationSolar::uploadView() {
   // vertices are transformed in camera space, so camera transform must be inverted
@@ -103,22 +106,20 @@ void ApplicationSolar::uploadUniforms() {
 void ApplicationSolar::initializeScene(){
 
   Node* RootNode      =  new Node("RootOfTheUniverse");
-  Scenegraph *scene    =  new Scenegraph("solarsystem", RootNode);
+  scene    =  Scenegraph("solarsystem", RootNode);
   Geometrynode* sun   =  new Geometrynode("sun");
 
  RootNode->addChildren(sun);
   for(int i = 0; i < 8; i++)
   {
     Geometrynode* planet = new Geometrynode("planeten");
-    //planet->setGeometry(planet);
+    planet->setGeometry(planet_model);
     sun->addChildren(planet);
-    model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
+
+  //  model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
   }
 
 }
-
-
-
 
 // load shader sources
 void ApplicationSolar::initializeShaderPrograms() {
@@ -135,8 +136,7 @@ void ApplicationSolar::initializeShaderPrograms() {
 // load models
 void ApplicationSolar::initializeGeometry() {
 
-
-  model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
+  planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
 
   // generate vertex array object
   glGenVertexArrays(1, &planet_object.vertex_AO);

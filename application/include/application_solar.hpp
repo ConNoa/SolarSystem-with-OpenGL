@@ -6,6 +6,13 @@
 #include "structs.hpp"
 #include "scenegraph.hpp"
 
+#include "node.hpp"
+#include "geometrynode.hpp"
+#include "cameranode.hpp"
+#include "model.hpp"
+
+
+
 // gpu representation of model
 class ApplicationSolar : public Application {
  public:
@@ -23,7 +30,8 @@ class ApplicationSolar : public Application {
   void resizeCallback(unsigned width, unsigned height);
 
   // draw all objects
-  void render() ;
+  void render() const;
+  void renderUniverse() const;
 
 
  protected:
@@ -48,6 +56,8 @@ class ApplicationSolar : public Application {
   glm::fmat4 m_view_transform;
   // camera projection matrix
   glm::fmat4 m_view_projection;
+
+  model planet_model;
 };
 
 #endif

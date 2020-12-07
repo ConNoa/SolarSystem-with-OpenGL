@@ -15,8 +15,8 @@ class Scenegraph{
     ~Scenegraph();
 
 
-    std::string              getName();
-    Node*                    getRoot();
+    std::string              getName() const;
+    Node*                    getRoot() const;
     std::string              printGraph();
 
 

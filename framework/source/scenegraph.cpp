@@ -20,11 +20,11 @@ Scenegraph::Scenegraph(string name, Node* root_node):
 Scenegraph::~Scenegraph(){}
 
 
-string Scenegraph::getName(){
+string Scenegraph::getName() const{
   return name_;
 }
 
-Node* Scenegraph::getRoot(){
+Node* Scenegraph::getRoot() const{
   return root_;
 }
 
