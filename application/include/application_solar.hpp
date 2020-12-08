@@ -11,6 +11,7 @@
 #include "cameranode.hpp"
 #include "model.hpp"
 
+#define PI 3.1415926
 
 
 // gpu representation of model
@@ -31,10 +32,19 @@ class ApplicationSolar : public Application {
 
   // draw all objects
   void render() const;
-  void renderUniverse() const;
 
+  void renderPlanets() const;
+
+  void renderStars() const;
+
+  void renderOrbits() const;
 
  protected:
+   //added  Stars and Orbits
+  void initializeStars();
+
+  void initializeOrbits();
+
    // initialize all Planets and the Moons
   void initializeScene();
 
@@ -50,6 +60,8 @@ class ApplicationSolar : public Application {
 
   // cpu representation of model
   model_object planet_object;
+  model_object star_object;
+  model_object orbit_object;
 
   Scenegraph scene;
   // camera transform matrix
@@ -58,6 +70,15 @@ class ApplicationSolar : public Application {
   glm::fmat4 m_view_projection;
 
   model planet_model;
+  model star_model;
+  model orbit_model;
+
+  int Stars_num;
+
+  std::vector<float> Stars;
+  std::vector<float> m_orbits;
+
+
 };
 
 #endif
