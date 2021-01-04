@@ -354,15 +354,17 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
 }
 
 //handle delta mouse movement input
-void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {/*
+void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
 
   // mouse handling
   //std::cout<<"mouse update: "<<pos_x<<" , "<<pos_y<<"\n";
-  m_view_transform = glm::rotate(m_view_transform, float(pos_x)/100, glm::fvec3{0.0f, -1.0f, 0.0f});
-  m_view_transform = glm::rotate(m_view_transform, float(pos_y)/100, glm::fvec3{1.0f, 0.0f, 0.0f});
-  uploadView();
+  m_view_transform = glm::rotate(m_view_transform, float(pos_x)/500, glm::fvec3{0.0f, -1.0f, 0.0f});
+  m_view_transform = glm::rotate(m_view_transform, float(pos_y)/500, glm::fvec3{1.0f, 0.0f, 0.0f});
+  for (auto i : Labels) {
+  uploadView(i);
+  }
   //we always need to upload, because camera is center
-*/
+
 }
 
 //handle resizing
