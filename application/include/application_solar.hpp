@@ -45,6 +45,8 @@ class ApplicationSolar : public Application {
 
   void initializeOrbits();
 
+  void initializeLabels();
+
    // initialize all Planets and the Moons
   void initializeScene();
 
@@ -54,9 +56,9 @@ class ApplicationSolar : public Application {
   // update uniform values
   void uploadUniforms();
   // upload projection matrix
-  void uploadProjection();
+  void uploadProjection(std::string const& object);
   // upload view matrix
-  void uploadView();
+  void uploadView(std::string const& object);
 
   // cpu representation of model
   model_object planet_object;
@@ -78,6 +80,7 @@ class ApplicationSolar : public Application {
   std::vector<float> Stars;
   std::vector<float> m_orbits;
 
+  std::vector<std::string> Labels;
 
 };
 

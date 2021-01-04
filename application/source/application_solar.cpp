@@ -29,9 +29,8 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 5.0f})}
  ,m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
 {
-
+  initializeLabels();
   initializeStars();
-  initializeOrbits();
   initializeGeometry();
   initializeShaderPrograms();
   initializeScene();
@@ -44,19 +43,29 @@ ApplicationSolar::~ApplicationSolar() {
   glDeleteVertexArrays(1, &planet_object.vertex_AO);
 }
 
+
+void ApplicationSolar::initializeLabels(){
+  std::string p = "planet";
+  Labels.push_back(p);
+  p = "stars";
+  Labels.push_back(p);
+  p = "orbits";
+  Labels.push_back(p);
+}
+
+
 void ApplicationSolar::initializeStars(){
     //Erstellung eines Sterne-Vektors mit positions und farbangaben
-  Stars_num = 200000;
+  Stars_num = 200;
 
   for (int i = 0; i < Stars_num; ++i)
   {
-    float pos_x = (1.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(20-1))))-10.0f;
-    float pos_y = (1.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(20-1))))-10.0f;
-    float pos_z = (1.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(20-1))))-10.0f;
-    //float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-    float r = 1.0;
-    float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-    float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    float pos_x = rand()%20 - 10.0f;
+    float pos_y = rand()%20 - 10.0f;
+    float pos_z = rand()%20 - 10.0f;
+    float r =  rand()%200;
+    float g =  rand()%2;
+    float b =  rand()%100;
     //float b = 0.0;
 
     Stars.push_back(pos_x);
@@ -69,16 +78,11 @@ void ApplicationSolar::initializeStars(){
   }
 }
 
-void ApplicationSolar::initializeOrbits() {
-
-}
-
 
 
 
 void ApplicationSolar::render() const{
   renderStars();
-  renderOrbits();
   renderPlanets();
 
 }
@@ -129,45 +133,37 @@ void ApplicationSolar::renderOrbits() const {
   glDrawArrays(orbit_object.draw_mode, 0, (int)m_orbits.size());
 }
 
-
-void ApplicationSolar::uploadView() {
+//string input to upload View und upload projection  mit stars orbit or planet input
+void ApplicationSolar::uploadView(std::string const& object) {
   // vertices are transformed in camera space, so camera transform must be inverted
   glm::fmat4 view_matrix = glm::inverse(m_view_transform);
   // upload matrix to gpu
-  glUniformMatrix4fv(m_shaders.at("stars").u_locs.at("ViewMatrix"),
+  glUniformMatrix4fv(m_shaders.at(object).u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
 
-  glUniformMatrix4fv(m_shaders.at("orbits").u_locs.at("ViewMatrix"),
-                     1, GL_FALSE, glm::value_ptr(view_matrix));
-
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
-                    1, GL_FALSE, glm::value_ptr(view_matrix));
 }
 
-void ApplicationSolar::uploadProjection() {
+
+void ApplicationSolar::uploadProjection(std::string const& object) {
   // upload matrix to gpu
-  glUniformMatrix4fv(m_shaders.at("stars").u_locs.at("ProjectionMatrix"),
+  glUniformMatrix4fv(m_shaders.at(object).u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
 
-  glUniformMatrix4fv(m_shaders.at("orbits").u_locs.at("ProjectionMatrix"),
-                     1, GL_FALSE, glm::value_ptr(m_view_projection));
-
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ProjectionMatrix"),
-                     1, GL_FALSE, glm::value_ptr(m_view_projection));
 }
 
 // update uniform locations
 void ApplicationSolar::uploadUniforms() {
   // bind shader to which to upload uniforms
-  glUseProgram(m_shaders.at("planet").handle);
-
-
+  //stinginput fehlt noch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  glUseProgram(m_shaders.at("stars").handle);
+  for (auto i : Labels) {
+    glUseProgram(m_shaders.at(i).handle);
+    uploadView(i);
+    uploadProjection(i);
+  }
   //glUseProgram(m_shaders.at("orbits").handle);
   // upload uniform values to new locations
-  uploadView();
-  uploadProjection();
 }
-
 ///////////////////////////// intialisation functions /////////////////////////
 
 void ApplicationSolar::initializeScene(){
@@ -239,10 +235,6 @@ void ApplicationSolar::initializeGeometry() {
   glEnableVertexAttribArray(0);
   // first attribute is 3 floats with no offset & stride
   glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, orbit_model.vertex_bytes, orbit_model.offsets[model::POSITION]);
-  // activate second attribute on gpu
-  glEnableVertexAttribArray(1);
-  // second attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, orbit_model.vertex_bytes, orbit_model.offsets[model::NORMAL]);
 
    // generate generic buffer
   glGenBuffers(1, &orbit_object.element_BO);
@@ -252,7 +244,7 @@ void ApplicationSolar::initializeGeometry() {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * orbit_model.indices.size(), orbit_model.indices.data(), GL_STATIC_DRAW);
 
   // store type of primitive to draw
-  orbit_object.draw_mode = GL_POINTS;
+  orbit_object.draw_mode = GL_LINES;
   // transfer number of indices to model object
   orbit_object.num_elements = GLsizei(orbit_model.indices.size());
 
@@ -342,11 +334,15 @@ void ApplicationSolar::initializeGeometry() {
 void ApplicationSolar::keyCallback(int key, int action, int mods) {
   if (key == GLFW_KEY_W  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.1f});
-    uploadView();
+    for (auto i : Labels) {
+    uploadView(i);
   }
+}
   else if (key == GLFW_KEY_S  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.1f});
-    uploadView();
+    for (auto i : Labels) {
+    uploadView(i);
+    }
   }
 }
 
@@ -360,7 +356,9 @@ void ApplicationSolar::resizeCallback(unsigned width, unsigned height) {
   // recalculate projection matrix for new aspect ration
   m_view_projection = utils::calculate_projection_matrix(float(width) / float(height));
   // upload new projection matrix
-  uploadProjection();
+  for (auto i : Labels) {
+  uploadProjection(i);
+  }
 }
 
 
