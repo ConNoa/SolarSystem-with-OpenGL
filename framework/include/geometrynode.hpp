@@ -10,6 +10,7 @@ class Geometrynode : public Node{
   public:
     Geometrynode();
     Geometrynode(std::string node_name);
+    
     model&   getGeometry();
     void     setGeometry(model& model_input);
 
