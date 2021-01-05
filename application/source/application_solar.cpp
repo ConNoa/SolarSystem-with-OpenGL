@@ -31,9 +31,10 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
 {
   initializeLabels();
   initializeStars();
+  initializePlanets();
   initializeGeometry();
   initializeShaderPrograms();
-  initializeScene();
+
 
 }
 
@@ -52,6 +53,7 @@ void ApplicationSolar::initializeLabels(){
   p = "orbits";
   Labels.push_back(p);
 }
+
 
 
 void ApplicationSolar::initializeStars(){
@@ -92,12 +94,17 @@ void ApplicationSolar::renderPlanets() const {
   glUseProgram(m_shaders.at("planet").handle);
 
   for(unsigned int i = 0; i < scene.getRoot()->getChildren("sun")->getChildrenList().size(); i++){
+//
 
-    glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
+    //std::cout<< scene.getRoot()->getChildren("sun")->getChildrenList().size()<<"\n";
+
+
+
+    glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()/4*i), glm::fvec3{0.0f, 1.0f, 0.0f});
     model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -3.0f*i});
     //integrated part
-    model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 0.3f, 0.0f});
-    // glm::fvec3 scale {(9-i)/3, (9-i)/3, (9-i)/3};
+    model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
+    //glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
     //model_matrix = glm::scale(model_matrix, scale);
     glm::fvec3 planet_color= {0.7,1.0, 0.2+0.12*i};
 
@@ -139,6 +146,8 @@ void ApplicationSolar::renderOrbits() const {
   glDrawArrays(orbit_object.draw_mode, 0, (int)m_orbits.size());
 }
 
+
+
 //string input to upload View und upload projection  mit stars orbit or planet input
 void ApplicationSolar::uploadView(std::string const& object) {
   // vertices are transformed in camera space, so camera transform must be inverted
@@ -170,21 +179,40 @@ void ApplicationSolar::uploadUniforms() {
   //glUseProgram(m_shaders.at("orbits").handle);
   // upload uniform values to new locations
 }
-///////////////////////////// intialisation functions /////////////////////////
+///////////////////////////// intialisation functions //initializeScene///////////////////////
 
-void ApplicationSolar::initializeScene(){
+void ApplicationSolar::initializePlanets(){
+
+  solarsystem_planets_.push_back(Planet("Merkur", 0.383f, 3.012f, 0.387f));
+  solarsystem_planets_.push_back(Planet("Venus", 0.950f, 1.177f, 0.723f));
+  solarsystem_planets_.push_back(Planet("Erde", 1.0f, 1.0f, 1.0f));
+  solarsystem_planets_.push_back(Planet("Mars",0.583f, 0.53f, 1.524f));
+  solarsystem_planets_.push_back(Planet("Jupiter", 10.97f, 0.084f, 5.2f));
+  solarsystem_planets_.push_back(Planet("Saturn",9.14f, 0.0339f, 9.54f));
+  solarsystem_planets_.push_back(Planet("Uranus", 3.98f, 0.0119f, 19.19f));
+  solarsystem_planets_.push_back(Planet("Neptun", 3.87f, 0.006f, 30.1f));
+
 
   Node* RootNode      =  new Node("RootOfTheUniverse");
   scene    =  Scenegraph("solarsystem", RootNode);
-  Geometrynode* sun   =  new Geometrynode("sun");
+  Geometrynode* sun   =  new Geometrynode("sun", 1.0f, 0.0f, 0.0f);
 
- RootNode->addChildren(sun);
+  RootNode->addChildren(sun);
+/*
   for(int i = 0; i < 8; i++)
   {
     Geometrynode* planet = new Geometrynode("planeten");
     planet->setGeometry(planet_model);
     sun->addChildren(planet);
   }
+*/
+  for(auto i : solarsystem_planets_)
+  {
+    Geometrynode* planet = new Geometrynode(i.name, i.size, i.rotation_speed, i.distance);
+    planet->setGeometry(planet_model);
+    sun->addChildren(planet);
+  }
+
 
 }
 

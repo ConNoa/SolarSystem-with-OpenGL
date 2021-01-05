@@ -48,7 +48,7 @@ class ApplicationSolar : public Application {
   void initializeLabels();
 
    // initialize all Planets and the Moons
-  void initializeScene();
+  void initializePlanets();
 
   void initializeShaderPrograms();
 
@@ -77,6 +77,7 @@ class ApplicationSolar : public Application {
 
   int Stars_num;
 
+  std::vector<Planet>solarsystem_planets_;
   std::vector<float> Stars;
   std::vector<float> m_orbits;
 
