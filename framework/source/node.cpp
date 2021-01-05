@@ -9,7 +9,7 @@ Node::Node():
     depth_{0},
     localTransform_{},
     worldTransform_{}
-{}
+    {}
 
 
   Node::Node(string node_name):
@@ -20,7 +20,7 @@ Node::Node():
       depth_{0},
       localTransform_{},
       worldTransform_{}
-  {}
+      {}
 
 
 

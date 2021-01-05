@@ -76,6 +76,7 @@ class ApplicationSolar : public Application {
   model orbit_model;
 
   int Stars_num;
+  GLfloat shader_mode = GLfloat(1.0f);
 
   std::vector<Planet>solarsystem_planets_;
   std::vector<float> Stars;

@@ -26,7 +26,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,planet_object{}
  ,star_object{}
  ,orbit_object{}
- ,m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 5.0f})}
+ ,m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{2.0f, 2.0f, 5.0f})}
  ,m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
 {
   initializeLabels();
@@ -81,12 +81,9 @@ void ApplicationSolar::initializeStars(){
 }
 
 
-
-
 void ApplicationSolar::render() const{
   renderStars();
   renderPlanets();
-
 }
 
 void ApplicationSolar::renderPlanets() const {
@@ -94,17 +91,14 @@ void ApplicationSolar::renderPlanets() const {
   glUseProgram(m_shaders.at("planet").handle);
 
   for(unsigned int i = 0; i < scene.getRoot()->getChildren("sun")->getChildrenList().size(); i++){
-//
 
-    //std::cout<< scene.getRoot()->getChildren("sun")->getChildrenList().size()<<"\n";
-
-
-
-    glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()/4*i), glm::fvec3{0.0f, 1.0f, 0.0f});
+    glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*solarsystem_planets_[i].rotation_speed), glm::fvec3{0.0f, 1.0f, 0.0f});
+//    model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f*solarsystem_planets_[i].distance});
     model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -3.0f*i});
     //integrated part
     model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
-    //glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
+  //  glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
+    glm::fvec3 scale {solarsystem_planets_[i].size, solarsystem_planets_[i].size, solarsystem_planets_[i].size};
     //model_matrix = glm::scale(model_matrix, scale);
     glm::fvec3 planet_color= {0.7,1.0, 0.2+0.12*i};
 
@@ -115,9 +109,6 @@ void ApplicationSolar::renderPlanets() const {
     // extra matrix for normal transformation to keep them orthogonal to surface
     glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
 
-
-
-
     glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
                        1, GL_FALSE, glm::value_ptr(normal_matrix));
 
@@ -126,6 +117,7 @@ void ApplicationSolar::renderPlanets() const {
 
     // draw bound vertex array using bound shaderscene
     glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+
  }
 }
 
@@ -148,6 +140,7 @@ void ApplicationSolar::renderOrbits() const {
 
 
 
+
 //string input to upload View und upload projection  mit stars orbit or planet input
 void ApplicationSolar::uploadView(std::string const& object) {
   // vertices are transformed in camera space, so camera transform must be inverted
@@ -155,6 +148,9 @@ void ApplicationSolar::uploadView(std::string const& object) {
   // upload matrix to gpu
   glUniformMatrix4fv(m_shaders.at(object).u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
+  if(object == "planet"){
+    glUniform1f(m_shaders.at("planet").u_locs.at("ShadingMethod"), shader_mode);
+  }
 
 }
 
@@ -170,7 +166,7 @@ void ApplicationSolar::uploadProjection(std::string const& object) {
 void ApplicationSolar::uploadUniforms() {
   // bind shader to which to upload uniforms
   //stinginput fehlt noch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//  glUseProgram(m_shaders.at("stars").handle);
+  //  glUseProgram(m_shaders.at("stars").handle);
   for (auto i : Labels) {
     glUseProgram(m_shaders.at(i).handle);
     uploadView(i);
@@ -183,14 +179,14 @@ void ApplicationSolar::uploadUniforms() {
 
 void ApplicationSolar::initializePlanets(){
 
-  solarsystem_planets_.push_back(Planet("Merkur", 0.383f, 3.012f, 0.387f));
-  solarsystem_planets_.push_back(Planet("Venus", 0.950f, 1.177f, 0.723f));
-  solarsystem_planets_.push_back(Planet("Erde", 1.0f, 1.0f, 1.0f));
-  solarsystem_planets_.push_back(Planet("Mars",0.583f, 0.53f, 1.524f));
+  solarsystem_planets_.push_back(Planet("Merkur", 0.383f, 3.012f, 1.87f));
+  solarsystem_planets_.push_back(Planet("Venus", 0.950f, 1.177f, 2.723f));
+  solarsystem_planets_.push_back(Planet("Erde", 1.0f, 1.0f, 3.0f));
+  solarsystem_planets_.push_back(Planet("Mars",0.583f, 0.53f, 4.524f));
   solarsystem_planets_.push_back(Planet("Jupiter", 10.97f, 0.084f, 5.2f));
-  solarsystem_planets_.push_back(Planet("Saturn",9.14f, 0.0339f, 9.54f));
-  solarsystem_planets_.push_back(Planet("Uranus", 3.98f, 0.0119f, 19.19f));
-  solarsystem_planets_.push_back(Planet("Neptun", 3.87f, 0.006f, 30.1f));
+  solarsystem_planets_.push_back(Planet("Saturn",9.14f, 0.0339f, 8.54f));
+  solarsystem_planets_.push_back(Planet("Uranus", 3.98f, 0.0119f, 10.19f));
+  solarsystem_planets_.push_back(Planet("Neptun", 3.87f, 0.006f, 12.1f));
 
 
   Node* RootNode      =  new Node("RootOfTheUniverse");
@@ -212,8 +208,6 @@ void ApplicationSolar::initializePlanets(){
     planet->setGeometry(planet_model);
     sun->addChildren(planet);
   }
-
-
 }
 
 // load shader sources
@@ -236,6 +230,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
   m_shaders.at("planet").u_locs["ViewMatrix"] = -1;
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("planet").u_locs["ShadingMethod"] = -1;
   m_shaders.at("planet").u_locs["Planet_Color"] = -1;
 
 
@@ -370,11 +365,23 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   if (key == GLFW_KEY_W  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.1f});
     for (auto i : Labels) {
-    uploadView(i);
+      uploadView(i);
+    }
   }
-}
   else if (key == GLFW_KEY_S  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.1f});
+    for (auto i : Labels) {
+    uploadView(i);
+    }
+  }
+  else if (key == GLFW_KEY_1  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    shader_mode = 1;
+    for (auto i : Labels) {
+    uploadView(i);
+    }
+  }
+  else if (key == GLFW_KEY_2  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    shader_mode = 2;
     for (auto i : Labels) {
     uploadView(i);
     }

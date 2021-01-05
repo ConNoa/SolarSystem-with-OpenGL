@@ -27,7 +27,9 @@ Geometrynode::Geometrynode(string node_name, float size_in, float rotation_speed
     size_{size_in},
     rotation_speed_{rotation_speed_in},
     distance_{distance_in}
-{cout<<"geometrynode mit allen parametern konstruiert\n";}
+{
+  //cout<<"geometrynode mit allen parametern konstruiert\n";
+}
 
 
 
@@ -38,4 +40,8 @@ model& Geometrynode::getGeometry(){
 
 void Geometrynode::setGeometry(model& model_input){
   geometry_ = model_input;
+}
+
+float Geometrynode::getDis(){
+  return distance_;
 }

@@ -18,13 +18,14 @@ class Geometrynode : public Node{
 
     float   getSize();
     float   getRot_speed();
-    float   getDistance();
-
-  private:
-    model geometry_;
+    float   getDis();
+    
     float size_;
     float rotation_speed_;
     float distance_;
+  private:
+    model geometry_;
+
 };
 
 #endif

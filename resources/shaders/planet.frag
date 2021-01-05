@@ -5,6 +5,7 @@ in vec3 pass_Normal_world;
 in vec3 pass_Normal_view;
 in vec3 pass_vert_Pos;
 in vec3 pass_vert_Pos_view;
+in float pass_ShadingMethod;
 
 in vec3 pass_Color;
 
@@ -34,6 +35,7 @@ const float shininess = 100.0;
 
 
 void main() {
+if(pass_ShadingMethod == 1){
   vec3 normal = normalize(pass_Normal_world);
   vec3 normal_view = normalize(pass_Normal_view);
   vec3 light_Direction = normalize(Sun - pass_vert_Pos);
@@ -54,7 +56,11 @@ void main() {
   resulting_color = ambient_color*amb_fac + lambertian*diffuse_color*dif_fac + specular_color*specular*spec_fac;
 
   out_Color = vec4(resulting_color, 1.0);
+  }
+else{
+  out_Color = vec4(pass_Color, 1.0);
 
+}
 }
 
 /*

@@ -12,11 +12,13 @@ uniform mat4 ProjectionMatrix;
 uniform mat4 NormalMatrix;
 uniform vec3 Planet_Color;
 
+uniform float ShadingMethod;
 
 out vec3 pass_Normal_world;
 out vec3 pass_Normal_view;
 out vec3 pass_vert_Pos;
 out vec3 pass_vert_Pos_view;
+out float pass_ShadingMethod;
 
 out vec3 pass_Color;
 
@@ -35,6 +37,6 @@ void main(void)
 	pass_Normal_view = (ViewMatrix * ModelMatrix * vec4(in_Normal, 0.0)).xyz;
 
 	//pass_vert_Pos = vec3(ViewMatrix * vec4(vertPos4.xyz, 0.0)).xyz;
-
+	pass_ShadingMethod = ShadingMethod;
 	pass_Color = Planet_Color;
 }
