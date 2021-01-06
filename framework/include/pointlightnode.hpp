@@ -18,8 +18,8 @@ class Pointlightnode : public Node {
 
   private:
 
-    glm::vec3     pointColor_;
     float         lightIntensity_;
+    glm::vec3     pointColor_;
 
 };
 

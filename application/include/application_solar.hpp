@@ -7,6 +7,7 @@
 #include "scenegraph.hpp"
 
 #include "node.hpp"
+#include "pointlightnode.hpp"
 #include "geometrynode.hpp"
 #include "cameranode.hpp"
 #include "model.hpp"
@@ -53,6 +54,8 @@ class ApplicationSolar : public Application {
   void initializeShaderPrograms();
 
   void initializeGeometry();
+
+  void initializePointlights();
   // update uniform values
   void uploadUniforms();
   // upload projection matrix

@@ -34,8 +34,6 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   initializePlanets();
   initializeGeometry();
   initializeShaderPrograms();
-
-
 }
 
 ApplicationSolar::~ApplicationSolar() {
@@ -84,6 +82,7 @@ void ApplicationSolar::initializeStars(){
 void ApplicationSolar::render() const{
   renderStars();
   renderPlanets();
+
 }
 
 void ApplicationSolar::renderPlanets() const {
@@ -187,6 +186,8 @@ void ApplicationSolar::initializePlanets(){
   solarsystem_planets_.push_back(Planet("Saturn",9.14f, 0.0339f, 8.54f));
   solarsystem_planets_.push_back(Planet("Uranus", 3.98f, 0.0119f, 10.19f));
   solarsystem_planets_.push_back(Planet("Neptun", 3.87f, 0.006f, 12.1f));
+
+  Pointlightnode* light = new Pointlightnode(50, glm::vec3{1.0, 1.0, 1.0});
 
 
   Node* RootNode      =  new Node("RootOfTheUniverse");
