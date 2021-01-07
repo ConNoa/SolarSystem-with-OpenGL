@@ -26,13 +26,12 @@ out vec3 pass_Color;
 void main(void)
 {
 	gl_Position = (ProjectionMatrix  * ViewMatrix * ModelMatrix)*  vec4(in_Position, 1.0);
-
 	vec4 vertPos4 = ModelMatrix * vec4(in_Position, 1.0);
-	//pass_vert_Pos = vec3(vertPos4)/vertPos4.w;
-	pass_vert_Pos = vec3(ViewMatrix*vertPos4);
+	pass_vert_Pos = vec3(vertPos4).xyz/vertPos4.w;
+	//pass_vert_Pos = vec3(ViewMatrix*vertPos4);
 
 	vec4 vertPos4_view  = ViewMatrix * ModelMatrix * vec4(in_Position, 1.0);
-	pass_vert_Pos_view = vec3(vertPos4_view)/vertPos4_view.w;
+	pass_vert_Pos_view = vec3(vertPos4_view).xyz/vertPos4_view.w;
 
 	pass_Normal_world = (ModelMatrix * vec4(in_Normal, 0.0)).xyz;
 	pass_Normal_view = (ViewMatrix * ModelMatrix * vec4(in_Normal, 0.0)).xyz;
