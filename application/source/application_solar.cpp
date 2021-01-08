@@ -99,7 +99,7 @@ void ApplicationSolar::renderPlanets() const {
   //  glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
     glm::fvec3 scale {solarsystem_planets_[i].size, solarsystem_planets_[i].size, solarsystem_planets_[i].size};
     //model_matrix = glm::scale(model_matrix, scale);
-    glm::fvec3 planet_color= {0.7,1.0, 0.2+0.12*i};
+    glm::fvec3 planet_color= {0.7,0.0, 0.2*i};
 
    //integrated parts
     glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(model_matrix));

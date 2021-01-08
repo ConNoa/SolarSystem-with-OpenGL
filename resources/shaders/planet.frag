@@ -24,7 +24,7 @@ const vec3 diffuse_color = vec3(1.0, 1.0, 1.0);
 //Reflection of Light to viewer
 const vec3 specular_color = vec3(1.0, 1.0, 1.0);
 
-const float amb_fac = 0.2;
+const float amb_fac = 0.4;
 const float dif_fac = 0.2;
 const float spec_fac = 0.9;
 
@@ -64,7 +64,7 @@ if(pass_ShadingMethod == 2){
   vec3 viewDir_sun = normalize(-pass_vert_Pos);
 
   vec3 normal = normalize(pass_Normal_world);
-  vec3 normal_view = normalize(pass_Normal_view);
+  vec3 normal_view = -normalize(pass_Normal_view);
 
   vec3 light_Direction = normalize(Sun - pass_vert_Pos);
   vec3 resulting_color;
