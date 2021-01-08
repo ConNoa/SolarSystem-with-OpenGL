@@ -17,6 +17,8 @@ class Node{
 
         Node();
         Node(string node_name);
+        virtual ~Node() = default;
+
 
         Node*                       getParent();
         void                        setParent(Node* parent);

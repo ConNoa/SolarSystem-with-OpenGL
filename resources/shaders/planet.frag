@@ -29,7 +29,7 @@ const float dif_fac = 0.2;
 const float spec_fac = 0.9;
 
 //Shininess, woooohoooo
-const float shininess = 10.0;
+const float shininess = 8.0;
 
 
 
@@ -54,8 +54,8 @@ if(pass_ShadingMethod == 1){
         specular = pow(specular_Angle, shininess);
       }
 
-    resulting_color = ambient_color*amb_fac + lambertian*diffuse_color*dif_fac + specular_color*specular*spec_fac;
-
+    resulting_color = ambient_color + lambertian*diffuse_color + specular_color*specular*spec_fac;
+//ouColor = ambientTerm + ((lightIntensity*lightColor)/4*PI*(lightPos - fragPos)^2) * (lambertianTerm + specularTerm)
     out_Color = vec4(resulting_color, 1.0);
   }
 
@@ -99,7 +99,7 @@ if(pass_ShadingMethod == 2){
     resulting_color = vec3(0,0.5,1);
   }
   else{
-    resulting_color = ambient_color*amb_fac+lambertian*diffuse_color*dif_fac;+specular_color*specular*spec_fac;
+    resulting_color = ambient_color+lambertian*diffuse_color+specular_color*specular;
   }
 
   out_Color = vec4(resulting_color, 1.0);

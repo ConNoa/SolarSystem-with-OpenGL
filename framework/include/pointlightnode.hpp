@@ -16,6 +16,9 @@ class Pointlightnode : public Node {
 
     void setLightNode(float intensity, glm::vec3 color);
 
+    float getIntensity();
+    glm::vec3 getColor();
+
   private:
 
     float         lightIntensity_;

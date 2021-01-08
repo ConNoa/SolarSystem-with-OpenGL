@@ -42,6 +42,14 @@ void Geometrynode::setGeometry(model& model_input){
   geometry_ = model_input;
 }
 
+float Geometrynode::getSize(){
+  return size_;
+}
+
+float Geometrynode::getRot_speed(){
+  return rotation_speed_;
+}
+
 float Geometrynode::getDis(){
   return distance_;
 }

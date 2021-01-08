@@ -89,34 +89,45 @@ void ApplicationSolar::renderPlanets() const {
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("planet").handle);
 
-  for(unsigned int i = 0; i < scene.getRoot()->getChildren("sun")->getChildrenList().size(); i++){
+//  for(unsigned int i = 0; i < scene.getRoot()->getChildren("sun")->getChildrenList().size(); i++){
 
-    glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*solarsystem_planets_[i].rotation_speed), glm::fvec3{0.0f, 1.0f, 0.0f});
-//    model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f*solarsystem_planets_[i].distance});
-    model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -3.0f*i});
-    //integrated part
-    model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
-  //  glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
-    glm::fvec3 scale {solarsystem_planets_[i].size, solarsystem_planets_[i].size, solarsystem_planets_[i].size};
-    //model_matrix = glm::scale(model_matrix, scale);
-    glm::fvec3 planet_color= {0.7,0.0, 0.2*i};
+  for(auto i : scene.getRoot()->getChildren("sun")->getChildrenList()){
 
-   //integrated parts
-    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(model_matrix));
-    glUniform3f(m_shaders.at("planet").u_locs.at("Planet_Color"), planet_color.x, planet_color.y, planet_color.z);
+    Geometrynode *gn{dynamic_cast<Geometrynode*>(i)};
+    if(gn){
 
-    // extra matrix for normal transformation to keep them orthogonal to surface
-    glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
+      glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*gn->getRot_speed()), glm::fvec3{0.0f, 1.0f, 0.0f});
+    //  glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*solarsystem_planets_[i].rotation_speed), glm::fvec3{0.0f, 1.0f, 0.0f});
+  //    model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f*solarsystem_planets_[i].distance});
 
-    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
-                       1, GL_FALSE, glm::value_ptr(normal_matrix));
+      float act_dis = gn->getDis();
+      model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -3.0f*act_dis});
+      //integrated part
+      model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
+      //  glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
+      float act_size = gn->getSize();
+      glm::fvec3 scale {act_size, act_size, act_size};
+      //model_matrix = glm::scale(model_matrix, scale);
+      //glm::fvec3 planet_color= {0.7,0.0, 0.2*i};
+      glm::fvec3 planet_color= {0.7,0.0, 0.2};
 
-    // bind the VAO to draw
-    glBindVertexArray(planet_object.vertex_AO);
+     //integrated parts
+      glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(model_matrix));
+      glUniform3f(m_shaders.at("planet").u_locs.at("Planet_Color"), planet_color.x, planet_color.y, planet_color.z);
 
-    // draw bound vertex array using bound shaderscene
-    glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+      // extra matrix for normal transformation to keep them orthogonal to surface
+      glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
 
+      glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
+                         1, GL_FALSE, glm::value_ptr(normal_matrix));
+
+      // bind the VAO to draw
+      glBindVertexArray(planet_object.vertex_AO);
+
+      // draw bound vertex array using bound shaderscene
+      glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+
+    }
  }
 }
 
@@ -137,9 +148,6 @@ void ApplicationSolar::renderOrbits() const {
   glDrawArrays(orbit_object.draw_mode, 0, (int)m_orbits.size());
 }
 
-
-
-
 //string input to upload View und upload projection  mit stars orbit or planet input
 void ApplicationSolar::uploadView(std::string const& object) {
   // vertices are transformed in camera space, so camera transform must be inverted
@@ -152,7 +160,6 @@ void ApplicationSolar::uploadView(std::string const& object) {
   }
 
 }
-
 
 void ApplicationSolar::uploadProjection(std::string const& object) {
   // upload matrix to gpu
