@@ -11,7 +11,8 @@ class Pointlightnode : public Node {
 
     Pointlightnode();
     Pointlightnode(float intensity_input, glm::vec3 color_input);
-    ~Pointlightnode();
+    virtual ~Pointlightnode() = default;
+
 
 
     void setLightNode(float intensity, glm::vec3 color);

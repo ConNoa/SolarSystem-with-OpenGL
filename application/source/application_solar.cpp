@@ -101,11 +101,11 @@ void ApplicationSolar::renderPlanets() const {
   //    model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f*solarsystem_planets_[i].distance});
 
       float act_dis = gn->getDis();
-      model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -3.0f*act_dis});
+      model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -0.3f*act_dis});
       //integrated part
       model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
       //  glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
-      float act_size = gn->getSize();
+      float act_size = 30*gn->getSize();
       glm::fvec3 scale {act_size, act_size, act_size};
       //model_matrix = glm::scale(model_matrix, scale);
       //glm::fvec3 planet_color= {0.7,0.0, 0.2*i};
@@ -185,7 +185,8 @@ void ApplicationSolar::uploadUniforms() {
 
 void ApplicationSolar::initializePlanets(){
 
-  solarsystem_planets_.push_back(Planet("Merkur", 0.383f, 3.012f, 1.87f));
+  solarsystem_planets_.push_back(Planet("Merkur", 10.383f, 3.012f, 0.0f));
+  //solarsystem_planets_.push_back(Planet("Merkur", 0.383f, 3.012f, 1.87f));
   solarsystem_planets_.push_back(Planet("Venus", 0.950f, 1.177f, 2.723f));
   solarsystem_planets_.push_back(Planet("Erde", 1.0f, 1.0f, 3.0f));
   solarsystem_planets_.push_back(Planet("Mars",0.583f, 0.53f, 4.524f));
