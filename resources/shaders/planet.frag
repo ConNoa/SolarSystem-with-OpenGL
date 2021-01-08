@@ -61,12 +61,15 @@ if(pass_ShadingMethod == 1){
 
 if(pass_ShadingMethod == 2){
 
+  vec3 viewDir_sun = normalize(-pass_vert_Pos);
+
   vec3 normal = normalize(pass_Normal_world);
   vec3 normal_view = normalize(pass_Normal_view);
+
   vec3 light_Direction = normalize(Sun - pass_vert_Pos);
   vec3 resulting_color;
-  vec3 viewDir = normalize(-pass_vert_Pos);
-  vec3 halfDir = normalize(light_Direction + viewDir);
+
+  vec3 halfDir = normalize(light_Direction + viewDir_sun);
   float specular = 0.0;
 
 
