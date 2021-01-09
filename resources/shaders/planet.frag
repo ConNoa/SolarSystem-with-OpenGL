@@ -92,9 +92,9 @@ if(pass_ShadingMethod == 2){
     specular = pow(specular_Angle, shininess);
 
   }
-  float view_angle = dot(pass_vert_Pos_view, normal);
+  float view_angle = dot(pass_vert_Pos_view, normal_view);
 
-  if(abs(view_angle)<0.3){
+  if(abs(view_angle)<0.95){
     //colored outline
     resulting_color = vec3(0,0.5,1);
   }

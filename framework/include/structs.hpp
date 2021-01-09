@@ -3,6 +3,10 @@
 
 #include <map>
 #include <glbinding/gl/gl.h>
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtc/type_ptr.hpp>
 // use gl definitions from glbinding
 using namespace gl;
 
@@ -13,14 +17,16 @@ struct Planet{
   name("planet"),
   size(1.0f),
   rotation_speed(1.0f),
-  distance(1.0f) // to origin
+  distance(1.0f), // to origin
+  color({0.3f,0.5f,0.7f})
   {}
 
-  Planet(std::string planet_name, float size_in, float rotation_speed_in, float distance_in) : size(size_in/9), rotation_speed(rotation_speed_in*1), distance(distance_in*9){} // Anpassungen für die verhältnissmäßigkeit der Größen wurden vorgenommen
+  Planet(std::string planet_name, float size_in, float rotation_speed_in, float distance_in, glm::vec3 color_in) : size(size_in), rotation_speed(rotation_speed_in*1), distance(distance_in), color(color_in){} // Anpassungen für die verhältnissmäßigkeit der Größen wurden vorgenommen
   std::string name;
   float size;
   float rotation_speed;
   float distance;
+  glm::vec3 color;
 };
 
 // gpu representation of model
