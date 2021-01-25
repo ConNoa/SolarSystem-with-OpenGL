@@ -6,7 +6,7 @@
 #include <glbinding/gl/functions.h>
 // load meta info extension
 #include <glbinding/Meta.h>
-// use gl definitions from glbinding 
+// use gl definitions from glbinding
 using namespace gl;
 
 #include <iostream>
@@ -41,7 +41,7 @@ GLuint shader(std::string const& file_path, GLenum shader_type) {
     GLint log_size = 0;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_size);
     // get log
-    std::vector<GLchar> log_buffer(log_size);
+    std::vector<GLchar>log_buffer(log_size);
     glGetShaderInfoLog(shader, log_size, &log_size, log_buffer.data());
     // output errors
     std::cerr << "OpenGl error: Compilation of " << glbinding::Meta::getString(shader_type).c_str() << " " << file_name(file_path) << ":\n";
@@ -80,7 +80,7 @@ unsigned program(std::map<GLenum, std::string> const& stages) {
     // get log
     std::vector<GLchar> log_buffer(log_size);
     glGetProgramInfoLog(program, log_size, &log_size, log_buffer.data());
-    
+
     // output errors
     std::string names{};
     for(auto const& stage : stages) {

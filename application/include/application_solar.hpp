@@ -41,6 +41,10 @@ class ApplicationSolar : public Application {
   void renderOrbits() const;
 
  protected:
+  GLuint initTexObj(pixel_data tex_data_in);
+
+  void loadTextures();
+
    //added  Stars and Orbits
   void initializeStars();
 
@@ -49,6 +53,8 @@ class ApplicationSolar : public Application {
   void initializeLabels();
 
    // initialize all Planets and the Moons
+  void initializeTextures();
+
   void initializePlanets();
 
   void initializeShaderPrograms();

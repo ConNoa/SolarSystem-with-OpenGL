@@ -11,7 +11,8 @@ Geometrynode::Geometrynode():
     size_{},
     rotation_speed_{},
     distance_{},
-    color_{}
+    color_{},
+    texture_{}
 {}
 
 Geometrynode::Geometrynode(string node_name):
@@ -20,16 +21,18 @@ Geometrynode::Geometrynode(string node_name):
     size_{},
     rotation_speed_{},
     distance_{},
-    color_{}
+    color_{},
+    texture_{}
 {}
 
-Geometrynode::Geometrynode(string node_name, float size_in, float rotation_speed_in, float distance_in, glm::vec3 color_in):
+Geometrynode::Geometrynode(string node_name, float size_in, float rotation_speed_in, float distance_in, glm::vec3 color_in, GLuint tex_in):
     Node{node_name},
     geometry_{},
     size_{size_in},
     rotation_speed_{rotation_speed_in},
     distance_{distance_in},
-    color_{color_in}
+    color_{color_in},
+    texture_{tex_in}
 {
   //cout<<"geometrynode mit allen parametern konstruiert\n";
 }
@@ -59,4 +62,8 @@ float Geometrynode::getDis(){
 
 glm::vec3 Geometrynode::getColor(){
   return color_;
+}
+
+GLuint Geometrynode::getTexture(){
+  return texture_;
 }

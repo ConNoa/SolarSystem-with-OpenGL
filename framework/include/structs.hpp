@@ -7,6 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include "pixel_data.hpp"
 // use gl definitions from glbinding
 using namespace gl;
 
@@ -18,15 +20,21 @@ struct Planet{
   size(1.0f),
   rotation_speed(1.0f),
   distance(1.0f), // to origin
-  color({0.3f,0.5f,0.7f})
+  color({0.3f,0.5f,0.7f}),
+  texture_data(),
+  texture_object()
   {}
 
-  Planet(std::string planet_name, float size_in, float rotation_speed_in, float distance_in, glm::vec3 color_in) : size(size_in), rotation_speed(rotation_speed_in*1), distance(distance_in), color(color_in){} // Anpassungen für die verhältnissmäßigkeit der Größen wurden vorgenommen
-  std::string name;
-  float size;
-  float rotation_speed;
-  float distance;
-  glm::vec3 color;
+
+      Planet(std::string planet_name, float size_in, float rotation_speed_in, float distance_in, glm::vec3 color_in, pixel_data tex_data_in) : name(planet_name), size(size_in), rotation_speed(rotation_speed_in), distance(distance_in), color(color_in), texture_data(tex_data_in){}
+      std::string name;
+      float size;
+      float rotation_speed;
+      float distance;
+      glm::vec3 color;
+      pixel_data texture_data;
+      GLuint texture_object;
+
 };
 
 // gpu representation of model

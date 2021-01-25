@@ -4,6 +4,7 @@
 #include "utils.hpp"
 #include "shader_loader.hpp"
 #include "model_loader.hpp"
+#include "texture_loader.hpp"
 
 #include <glbinding/gl/gl.h>
 // use gl definitions from glbinding
@@ -55,18 +56,16 @@ void ApplicationSolar::initializeLabels(){
 
 
 void ApplicationSolar::initializeStars(){
-    //Erstellung eines Sterne-Vektors mit positions und farbangaben
+  //Erstellung eines Sterne-Vektors mit positions und farbangaben
   Stars_num = 200;
-
   for (int i = 0; i < Stars_num; ++i)
   {
-    float pos_x = rand()%20 - 10.0f;
-    float pos_y = rand()%20 - 10.0f;
-    float pos_z = rand()%20 - 10.0f;
-    float r =  rand()%200;
-    float g =  rand()%2;
-    float b =  rand()%100;
-    //float b = 0.0;
+    float pos_x = float(rand()%20) - 10.0f;
+    float pos_y = float(rand()%20) - 10.0f;
+    float pos_z = float(rand()%20) - 10.0f;
+    float r =  float(rand()%200);
+    float g =  float(rand()%2);
+    float b =  float(rand()%100);
 
     Stars.push_back(pos_x);
     Stars.push_back(pos_y);
@@ -74,6 +73,7 @@ void ApplicationSolar::initializeStars(){
     Stars.push_back(r);
     Stars.push_back(g);
     Stars.push_back(b);
+
 
   }
 }
@@ -88,44 +88,52 @@ void ApplicationSolar::render() const{
 void ApplicationSolar::renderPlanets() const {
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("planet").handle);
-
-//  for(unsigned int i = 0; i < scene.getRoot()->getChildren("sun")->getChildrenList().size(); i++){
-
+  //for(unsigned int i = 0; i < scene.getRoot()->getChildren("sun")->getChildrenList().size(); i++){
   for(auto i : scene.getRoot()->getChildren("sun")->getChildrenList()){
-
     Geometrynode *gn{dynamic_cast<Geometrynode*>(i)};
     if(gn){
-
       glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*gn->getRot_speed()), glm::fvec3{0.0f, 1.0f, 0.0f});
-    //  glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*solarsystem_planets_[i].rotation_speed), glm::fvec3{0.0f, 1.0f, 0.0f});
-  //    model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f*solarsystem_planets_[i].distance});
-
+      //glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*solarsystem_planets_[i].rotation_speed), glm::fvec3{0.0f, 1.0f, 0.0f});
+      //model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f*solarsystem_planets_[i].distance});
       float act_dis = gn->getDis();
       model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -3.0f*act_dis});
       //integrated part
       model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
-      //  glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
+      //glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
       float act_size = 4*gn->getSize();
       glm::fvec3 scale {act_size, act_size, act_size};
       //model_matrix = glm::scale(model_matrix, scale);
       //glm::fvec3 planet_color= {0.7,0.0, 0.2*i};
       glm::fvec3 planet_color= gn->getColor();
-
-     //integrated parts
+      //integrated parts
       glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(model_matrix));
       glUniform3f(m_shaders.at("planet").u_locs.at("Planet_Color"),planet_color.x, planet_color.y, planet_color.z);
-
-      // extra matrix for normal transformation to keep them orthogonal to surface
+      //extra matrix for normal transformation to keep them orthogonal to surface
       glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
-
       glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
                          1, GL_FALSE, glm::value_ptr(normal_matrix));
+      //bind the VAO to draw
+      glBindVertexArray(planet_object.vertex_AO);
+      //draw bound vertex array using bound shaderscene
+      glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+
+      //---------------texturepart begins
+      int color_sampler_location = glGetUniformLocation(m_shaders.at("planet").handle, "ColorTex");
+      glActiveTexture(GL_TEXTURE0);
+
+      glBindTexture(GL_TEXTURE_2D, gn->getTexture());
+      glUniform1i(color_sampler_location, 0);
+
+      //upload_planet_transforms(gn->getSize());
+      //color_planets(gn->getColor());
+
 
       // bind the VAO to draw
       glBindVertexArray(planet_object.vertex_AO);
-
-      // draw bound vertex array using bound shaderscene
+      // draw bound vertex array using bound shader
       glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+
+      //-----------------
 
     }
  }
@@ -158,7 +166,6 @@ void ApplicationSolar::uploadView(std::string const& object) {
   if(object == "planet"){
     glUniform1f(m_shaders.at("planet").u_locs.at("ShadingMethod"), shader_mode);
   }
-
 }
 
 void ApplicationSolar::uploadProjection(std::string const& object) {
@@ -183,25 +190,80 @@ void ApplicationSolar::uploadUniforms() {
 }
 ///////////////////////////// intialisation functions //initializeScene///////////////////////
 
+
+void ApplicationSolar::initializeTextures(){
+  for (auto i: solarsystem_planets_)
+  {
+  glActiveTexture(GL_TEXTURE0);
+  GLuint texture_object;
+  glGenTextures(1, &texture_object);
+  glBindTexture(GL_TEXTURE_2D, texture_object);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, i.texture_data.channels, i.texture_data.width, i.texture_data.height, 0,
+              i.texture_data.channels, i.texture_data.channel_type, i.texture_data.ptr());
+  i.texture_object = texture_object;
+  }
+  /*
+  glActiveTexture(GL_TEXTURE0);
+  glGenTextures(1, &sky_sphere_tex_obj);
+  glBindTexture(GL_TEXTURE_2D, sky_sphere_tex_obj);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, sky_sphere_texture.channels, sky_sphere_texture.width, sky_sphere_texture.height, 0,
+              sky_sphere_texture.channels, sky_sphere_texture.channel_type, sky_sphere_texture.ptr());
+  std::cout << "working?" <<"\n";
+  */
+}
+GLuint ApplicationSolar::initTexObj(pixel_data tex_data_in){
+  glActiveTexture(GL_TEXTURE0);
+  GLuint texture_object;
+  glGenTextures(1, &texture_object);
+  glBindTexture(GL_TEXTURE_2D, texture_object);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, tex_data_in.channels, tex_data_in.width, tex_data_in.height, 0,
+              tex_data_in.channels, tex_data_in.channel_type, tex_data_in.ptr());
+  return texture_object;
+}
+
+void ApplicationSolar::loadTextures(){
+
+
+}
+
 void ApplicationSolar::initializePlanets(){
   glm::fvec3 planet_color= {0.7,0.0, 0.2};
 
-  solarsystem_planets_.push_back(Planet("Merkur", 10.383f, 3.012f, 0.0f, {0.7,0.0, 0.2}));
-  //solarsystem_planets_.push_back(Planet("Merkur", 0.383f, 3.012f, 1.87f));
-  solarsystem_planets_.push_back(Planet("Venus", 0.950f, 1.177f, 2.723f, {0.7,0.6, 0.2}));
-  solarsystem_planets_.push_back(Planet("Erde", 1.0f, 1.0f, 3.0f, {0.7,0.0, 0.22}));
-  solarsystem_planets_.push_back(Planet("Mars",0.583f, 0.53f, 4.524f, {0.7,0.2, 0.2}));
-  solarsystem_planets_.push_back(Planet("Jupiter", 10.97f, 0.084f, 5.2f, {0.7,0.5, 0.42}));
-  solarsystem_planets_.push_back(Planet("Saturn",9.14f, 0.0339f, 8.54f, {0.7,0.0, 0.2}));
-  solarsystem_planets_.push_back(Planet("Uranus", 3.98f, 0.0119f, 10.19f, {0.7,0.3, 0.2}));
-  solarsystem_planets_.push_back(Planet("Neptun", 3.87f, 0.006f, 12.1f, {0.7,0.0, 0.52}));
+  pixel_data Sky_tex = texture_loader::file("../resources/textures/sky_sphere.png");
+  pixel_data Sun_tex = texture_loader::file("../resources/textures/sunmap.png");
+  pixel_data Merkur_tex = texture_loader::file("../resources/textures/mercurymap.png");
+  pixel_data Venus_tex = texture_loader::file("../resources/textures/venusmap.png");
+  pixel_data Erde_tex = texture_loader::file("../resources/textures/earthmap1k.png");
+  pixel_data Mond_tex = texture_loader::file("../resources/textures/moonmap1k.png");
+  pixel_data Mars_tex = texture_loader::file("../resources/textures/marsmap1k.png");
+  pixel_data Jupiter_tex = texture_loader::file("../resources/textures/jupitermap.png");
+  pixel_data Saturn_tex = texture_loader::file("../resources/textures/saturnmap.png");
+  pixel_data Uranus_tex = texture_loader::file("../resources/textures/uranusmap.png");
+  pixel_data Neptun_tex = texture_loader::file("../resources/textures/neptunemap.png");
+
+  solarsystem_planets_.push_back(Planet("Merkur", 10.383f, 3.012f, 0.0f, {0.7,0.0, 0.2}, Merkur_tex));
+  solarsystem_planets_.push_back(Planet("Venus", 0.950f, 1.177f, 2.723f, {0.7,0.6, 0.2}, Venus_tex));
+  solarsystem_planets_.push_back(Planet("Erde", 1.0f, 1.0f, 3.0f, {0.7,0.0, 0.22}, Erde_tex));
+  solarsystem_planets_.push_back(Planet("Mars",0.583f, 0.53f, 4.524f, {0.7,0.2, 0.2}, Mars_tex));
+  solarsystem_planets_.push_back(Planet("Jupiter", 10.97f, 0.084f, 5.2f, {0.7,0.5, 0.42}, Jupiter_tex));
+  solarsystem_planets_.push_back(Planet("Saturn",9.14f, 0.0339f, 8.54f, {0.7,0.0, 0.2}, Saturn_tex));
+  solarsystem_planets_.push_back(Planet("Uranus", 3.98f, 0.0119f, 10.19f, {0.7,0.3, 0.2}, Uranus_tex));
+  solarsystem_planets_.push_back(Planet("Neptun", 3.87f, 0.006f, 12.1f, {0.7,0.0, 0.52}, Neptun_tex));
+
+  initializeTextures();
 
   Pointlightnode* light = new Pointlightnode(50, glm::vec3{1.0, 1.0, 1.0});
 
 
   Node* RootNode      =  new Node("RootOfTheUniverse");
   scene    =  Scenegraph("solarsystem", RootNode);
-  Geometrynode* sun   =  new Geometrynode("sun", 1.0f, 0.0f, 0.0f, {0.7,0.0, 0.52});
+  Geometrynode* sun   =  new Geometrynode("sun", 1.0f, 0.0f, 0.0f, {0.7,0.0, 0.52}, initTexObj(Sun_tex));
 
   RootNode->addChildren(sun);
 /*
@@ -214,7 +276,7 @@ void ApplicationSolar::initializePlanets(){
 */
   for(auto i : solarsystem_planets_)
   {
-    Geometrynode* planet = new Geometrynode(i.name, i.size, i.rotation_speed, i.distance, i.color);
+    Geometrynode* planet = new Geometrynode(i.name, i.size, i.rotation_speed, i.distance, i.color, i.texture_object);
     planet->setGeometry(planet_model);
     sun->addChildren(planet);
   }
@@ -287,8 +349,6 @@ void ApplicationSolar::initializeGeometry() {
   orbit_object.draw_mode = GL_LINES;
   // transfer number of indices to model object
   orbit_object.num_elements = GLsizei(orbit_model.indices.size());
-
-
 
 
   //------------------Stars--------------------
