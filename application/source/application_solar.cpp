@@ -34,7 +34,10 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   initializeStars();
   initializePlanets();
   initializeGeometry();
+//  std::cout << "init g" <<"\n";
   initializeShaderPrograms();
+//  std::cout << "init sp" <<"\n";
+
 }
 
 ApplicationSolar::~ApplicationSolar() {
@@ -54,6 +57,28 @@ void ApplicationSolar::initializeLabels(){
 }
 
 
+
+void ApplicationSolar::initializeFramebuffer(){
+  glGenRenderbuffers(1, &rb_handle);
+  glBindRenderbuffer(GL_RENDERBUFFER, rb_handle);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 800, 600);
+
+  glActiveTexture(GL_TEXTURE0);
+  glGenTextures(1, &framebuffer_tex_obj);
+  glBindTexture(GL_TEXTURE_2D, framebuffer_tex_obj);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+  glGenFramebuffers(1, &fbo_handle);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, framebuffer_tex_obj, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb_handle);
+  GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1 , draw_buffers);
+  GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  if (status != GL_FRAMEBUFFER_COMPLETE) { std::cout << "Frambuffer läuft nicht " << '\n';}
+}
 
 void ApplicationSolar::initializeStars(){
   //Erstellung eines Sterne-Vektors mit positions und farbangaben
@@ -118,11 +143,9 @@ void ApplicationSolar::renderPlanets() const {
       glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
 
       //---------------texturepart begins
-      int color_sampler_location = glGetUniformLocation(m_shaders.at("planet").handle, "ColorTex");
       glActiveTexture(GL_TEXTURE0);
-
-      glBindTexture(GL_TEXTURE_2D, gn->getTexture());
-      glUniform1i(color_sampler_location, 0);
+      glBindTexture(GL_TEXTURE_2D, framebuffer_tex_obj);
+      glUniform1i(m_shaders.at("planet").u_locs.at("Planets_Texture"), 0);
 
       //upload_planet_transforms(gn->getSize());
       //color_planets(gn->getColor());
@@ -203,6 +226,8 @@ void ApplicationSolar::initializeTextures(){
   glTexImage2D(GL_TEXTURE_2D, 0, i.texture_data.channels, i.texture_data.width, i.texture_data.height, 0,
               i.texture_data.channels, i.texture_data.channel_type, i.texture_data.ptr());
   i.texture_object = texture_object;
+  std::cout << "init textures" <<"\n";
+
   }
   /*
   glActiveTexture(GL_TEXTURE0);
@@ -225,11 +250,11 @@ GLuint ApplicationSolar::initTexObj(pixel_data tex_data_in){
   glTexImage2D(GL_TEXTURE_2D, 0, tex_data_in.channels, tex_data_in.width, tex_data_in.height, 0,
               tex_data_in.channels, tex_data_in.channel_type, tex_data_in.ptr());
   return texture_object;
+  std::cout << "init textures obj" <<"\n";
+
 }
 
 void ApplicationSolar::loadTextures(){
-
-
 }
 
 void ApplicationSolar::initializePlanets(){
@@ -266,20 +291,22 @@ void ApplicationSolar::initializePlanets(){
   Geometrynode* sun   =  new Geometrynode("sun", 1.0f, 0.0f, 0.0f, {0.7,0.0, 0.52}, initTexObj(Sun_tex));
 
   RootNode->addChildren(sun);
-/*
-  for(int i = 0; i < 8; i++)
-  {
-    Geometrynode* planet = new Geometrynode("planeten");
-    planet->setGeometry(planet_model);
-    sun->addChildren(planet);
-  }
-*/
+    /*
+      for(int i = 0; i < 8; i++)
+      {
+        Geometrynode* planet = new Geometrynode("planeten");
+        planet->setGeometry(planet_model);
+        sun->addChildren(planet);
+      }
+    */
   for(auto i : solarsystem_planets_)
   {
     Geometrynode* planet = new Geometrynode(i.name, i.size, i.rotation_speed, i.distance, i.color, i.texture_object);
     planet->setGeometry(planet_model);
     sun->addChildren(planet);
   }
+  std::cout << "init planets" <<"\n";
+
 }
 
 // load shader sources
@@ -304,6 +331,8 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("planet").u_locs["ShadingMethod"] = -1;
   m_shaders.at("planet").u_locs["Planet_Color"] = -1;
+  m_shaders.at("planet").u_locs["Planets_Texture"] = -1;
+
 
 
   m_shaders.at("stars").u_locs["ViewMatrix"] = -1;
@@ -452,6 +481,12 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   }
   else if (key == GLFW_KEY_2  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     shader_mode = 2;
+    for (auto i : Labels) {
+    uploadView(i);
+    }
+  }
+  else if (key == GLFW_KEY_3  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+    shader_mode = 3;
     for (auto i : Labels) {
     uploadView(i);
     }

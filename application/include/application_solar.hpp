@@ -55,6 +55,8 @@ class ApplicationSolar : public Application {
    // initialize all Planets and the Moons
   void initializeTextures();
 
+  void initializeFramebuffer();
+
   void initializePlanets();
 
   void initializeShaderPrograms();
@@ -92,6 +94,10 @@ class ApplicationSolar : public Application {
   std::vector<float> m_orbits;
 
   std::vector<std::string> Labels;
+
+  GLuint framebuffer_tex_obj;
+  GLuint rb_handle;
+  GLuint fbo_handle;
 
 };
 

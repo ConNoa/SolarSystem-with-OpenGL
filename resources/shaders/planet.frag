@@ -6,8 +6,8 @@ in vec3 pass_Normal_view;
 in vec3 pass_vert_Pos;
 in vec3 pass_vert_Pos_view;
 in float pass_ShadingMethod;
-
 in vec3 pass_Color;
+in  vec2 pass_TexCoord;
 
 
 out vec4 out_Color;
@@ -35,7 +35,7 @@ const float shininess = 8.0;
 
 
 void main() {
-if(pass_ShadingMethod == 1){
+  if(pass_ShadingMethod == 1){
 
     vec3 normal = normalize(pass_Normal_world);
     vec3 normal_view = normalize(pass_Normal_view);
@@ -55,55 +55,57 @@ if(pass_ShadingMethod == 1){
       }
 
     resulting_color = ambient_color + lambertian*diffuse_color + specular_color*specular*spec_fac;
-//ouColor = ambientTerm + ((lightIntensity*lightColor)/4*PI*(lightPos - fragPos)^2) * (lambertianTerm + specularTerm)
+      //ouColor = ambientTerm + ((lightIntensity*lightColor)/4*PI*(lightPos - fragPos)^2) * (lambertianTerm + specularTerm)
     out_Color = vec4(resulting_color, 1.0);
   }
 
-if(pass_ShadingMethod == 2){
+  if(pass_ShadingMethod == 2){
 
-  vec3 viewDir_sun = normalize(-pass_vert_Pos);
+    vec3 viewDir_sun = normalize(-pass_vert_Pos);
 
-  vec3 normal = normalize(pass_Normal_world);
-  vec3 normal_view = -normalize(pass_Normal_view);
+    vec3 normal = normalize(pass_Normal_world);
+    vec3 normal_view = -normalize(pass_Normal_view);
 
-  vec3 light_Direction = normalize(Sun - pass_vert_Pos);
-  vec3 resulting_color;
+    vec3 light_Direction = normalize(Sun - pass_vert_Pos);
+    vec3 resulting_color;
 
-  vec3 halfDir = normalize(light_Direction + viewDir_sun);
-  float specular = 0.0;
+    vec3 halfDir = normalize(light_Direction + viewDir_sun);
+    float specular = 0.0;
 
 
-  float lambertian = max(dot(light_Direction, normal), 0.0);
+    float lambertian = max(dot(light_Direction, normal), 0.0);
 
-  if(lambertian>0){
-    if(lambertian>0.75){
-      lambertian = 1;
+    if(lambertian>0){
+      if(lambertian>0.75){
+        lambertian = 1;
+      }
+      else if(lambertian > 0.5){
+        lambertian = 0.75;
+      }
+      else if(lambertian > 0.25){
+        lambertian = 0.5;
+      }
+      else if (lambertian > 0.0){
+        lambertian = 0.25;
+      }
+      float specular_Angle = max(dot(halfDir, normal), 0.0);
+      specular = pow(specular_Angle, shininess);
+
     }
-    else if(lambertian > 0.5){
-      lambertian = 0.75;
-    }
-    else if(lambertian > 0.25){
-      lambertian = 0.5;
-    }
-    else if (lambertian > 0.0){
-      lambertian = 0.25;
-    }
-    float specular_Angle = max(dot(halfDir, normal), 0.0);
-    specular = pow(specular_Angle, shininess);
+    float view_angle = dot(pass_vert_Pos_view, normal_view);
 
+    if(abs(view_angle)<0.95){
+      //colored outline
+      resulting_color = vec3(0,0.5,1);
+    }
+    else{
+      resulting_color = ambient_color+lambertian*diffuse_color+specular_color*specular;
+    }
+
+    out_Color = vec4(resulting_color, 1.0);
   }
-  float view_angle = dot(pass_vert_Pos_view, normal_view);
 
-  if(abs(view_angle)<0.95){
-    //colored outline
-    resulting_color = vec3(0,0.5,1);
-  }
-  else{
-    resulting_color = ambient_color+lambertian*diffuse_color+specular_color*specular;
-  }
-
-  out_Color = vec4(resulting_color, 1.0);
+  if(pass_ShadingMethod == 3){
 
 }
-
 }
