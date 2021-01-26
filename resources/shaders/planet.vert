@@ -28,6 +28,8 @@ out vec2 pass_TexCoord;
 
 void main(void)
 {
+	pass_TexCoord = in_TexCoord.xy;
+
 	gl_Position = (ProjectionMatrix  * ViewMatrix * ModelMatrix)*  vec4(in_Position, 1.0);
 	vec4 vertPos4 = ModelMatrix * vec4(in_Position, 1.0);
 	pass_vert_Pos = vec3(vertPos4).xyz/vertPos4.w;
