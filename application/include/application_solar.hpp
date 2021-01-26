@@ -17,88 +17,91 @@
 
 // gpu representation of model
 class ApplicationSolar : public Application {
- public:
-  // allocate and initialize objects
-  ApplicationSolar(std::string const& resource_path);
-  // free allocated objects
-  ~ApplicationSolar();
+  public:
+    // allocate and initialize objects
+    ApplicationSolar(std::string const& resource_path);
+    // free allocated objects
+    ~ApplicationSolar();
+
+    // react to key input
+    void keyCallback(int key, int action, int mods);
+    //handle delta mouse movement input
+    void mouseCallback(double pos_x, double pos_y);
+    //handle resizing
+    void resizeCallback(unsigned width, unsigned height);
+
+    // draw all objects
+    void render() const;
+
+    void renderPlanets() const;
+
+    void renderStars() const;
+
+    void renderOrbits() const;
+
+  protected:
+    GLuint initTexObj(pixel_data tex_data_in);
+    //added  Stars and Orbits
+    void initializeStars();
+
+    void initializeOrbits();
+
+    void initializeLabels();
+
+    // initialize all Planets and the Moons
+    std::vector<GLuint> initializeTextures();
+
+    void initializeFramebuffer();
+
+    void initializePlanets();
+
+    void initializeShaderPrograms();
+
+    void initializeGeometry();
+
+    void initializePointlights();
+
+    void loadTextures();
 
 
-  // react to key input
-  void keyCallback(int key, int action, int mods);
-  //handle delta mouse movement input
-  void mouseCallback(double pos_x, double pos_y);
-  //handle resizing
-  void resizeCallback(unsigned width, unsigned height);
+    // update uniform values
+    void uploadUniforms();
+    // upload projection matrix
+    void uploadProjection(std::string const& object);
+    // upload view matrix
+    void uploadView(std::string const& object);
 
-  // draw all objects
-  void render() const;
+    // cpu representation of model
+    model_object planet_object;
+    model_object star_object;
+    model_object orbit_object;
 
-  void renderPlanets() const;
+    Scenegraph scene;
+    // camera transform matrix
+    glm::fmat4 view_matrix_;
+    // camera projection matrix
+    glm::fmat4 projection_matrix_;
 
-  void renderStars() const;
+    model planet_model;
+    model star_model;
+    model orbit_model;
 
-  void renderOrbits() const;
+    int Stars_num;
+    GLfloat shader_mode;
 
- protected:
-  GLuint initTexObj(pixel_data tex_data_in);
+    std::vector<Planet>solarsystem_planets_;
+    std::vector<float> Stars;
+    std::vector<float> m_orbits;
 
-  void loadTextures();
+    std::vector<std::string> Labels;
 
-   //added  Stars and Orbits
-  void initializeStars();
+    GLuint framebuffer_tex_obj;
+    GLuint rb_handle;
+    GLuint fbo_handle;
+    //DEBUG
+    GLuint texture_object;
 
-  void initializeOrbits();
-
-  void initializeLabels();
-
-   // initialize all Planets and the Moons
-  void initializeTextures();
-
-  void initializeFramebuffer();
-
-  void initializePlanets();
-
-  void initializeShaderPrograms();
-
-  void initializeGeometry();
-
-  void initializePointlights();
-  // update uniform values
-  void uploadUniforms();
-  // upload projection matrix
-  void uploadProjection(std::string const& object);
-  // upload view matrix
-  void uploadView(std::string const& object);
-
-  // cpu representation of model
-  model_object planet_object;
-  model_object star_object;
-  model_object orbit_object;
-
-  Scenegraph scene;
-  // camera transform matrix
-  glm::fmat4 m_view_transform;
-  // camera projection matrix
-  glm::fmat4 m_view_projection;
-
-  model planet_model;
-  model star_model;
-  model orbit_model;
-
-  int Stars_num;
-  GLfloat shader_mode = GLfloat(1.0f);
-
-  std::vector<Planet>solarsystem_planets_;
-  std::vector<float> Stars;
-  std::vector<float> m_orbits;
-
-  std::vector<std::string> Labels;
-
-  GLuint framebuffer_tex_obj;
-  GLuint rb_handle;
-  GLuint fbo_handle;
-
+    pixel_data test_image;
 };
 
 #endif

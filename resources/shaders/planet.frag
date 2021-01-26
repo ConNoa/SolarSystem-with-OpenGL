@@ -111,7 +111,9 @@ void main() {
   }
 
   if(pass_ShadingMethod == 3){
+
     diffuse_color = texture(Planets_Texture, pass_TexCoord).xyz;
+    //diffuse_color = vec3(1, 0, 0);
   //  shininess = 0.5;
     vec3 normal = normalize(pass_Normal_world);
 	  vec3 lightDir = Sun - pass_vert_Pos;
@@ -128,7 +130,7 @@ void main() {
 	}
 	vec3 colorLinear = ambient_color + diffuse_color+ specular_color * specular;
 
-	out_Color = vec4(colorLinear, 1.0);
+	out_Color = vec4(diffuse_color, 1.0);
 
 
   }
