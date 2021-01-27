@@ -28,6 +28,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,planet_object{}
  ,star_object{}
  ,orbit_object{}
+ ,sky_object{}
  ,view_matrix_{glm::translate(glm::fmat4{((0.199485, 0.019970, -0.979681, 0.000000), (-0.118151, 0.992984, -0.003819, 0.000000), (0.972736, 0.116513, 0.200445, 0.000000), (10.000000, 2.000000, 0.000000, 1.000000))}
  ,glm::fvec3{10.0f, 2.0f, 0.0f})}
  ,projection_matrix_{utils::calculate_projection_matrix(initial_aspect_ratio)}
@@ -54,7 +55,6 @@ void ApplicationSolar::initializeLabels(){
   Labels.push_back("stars");
   Labels.push_back("orbits");
 }
-
 
 void ApplicationSolar::initializeFramebuffer(){
   glGenRenderbuffers(1, &rb_handle);
@@ -99,7 +99,6 @@ void ApplicationSolar::initializeStars(){
   }
 }
 
-///////////////////////////// intialisation functions //initializeScene///////////////////////
 void ApplicationSolar::initializeTextures(std::vector<std::pair<std::string, pixel_data>> tex_files){
   for (auto i: tex_files)
   {
@@ -153,7 +152,6 @@ void ApplicationSolar::loadTextures(){
 
 }
 
-
 void ApplicationSolar::initializePlanets(){
   glm::fvec3 planet_color= {0.7,0.0, 0.2};
 
@@ -197,6 +195,9 @@ void ApplicationSolar::initializeShaderPrograms() {
                                            {GL_FRAGMENT_SHADER, m_resource_path + "shaders/stars.frag"}}});
   m_shaders.emplace("orbits", shader_program{{{GL_VERTEX_SHADER,m_resource_path + "shaders/stars.vert"},
                                            {GL_FRAGMENT_SHADER, m_resource_path + "shaders/stars.frag"}}});
+  m_shaders.emplace("sky", shader_program{{{GL_VERTEX_SHADER,m_resource_path + "shaders/skybox.vert"},
+                                            {GL_FRAGMENT_SHADER, m_resource_path + "shaders/skybox.frag"}}});
+
   // request uniform locations for shader program
   m_shaders.at("planet").u_locs["NormalMatrix"] = -1;
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
@@ -209,6 +210,8 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("stars").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("orbits").u_locs["ViewMatrix"] = -1;
   m_shaders.at("orbits").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("sky").u_locs["ViewMatrix"] = -1;
+  m_shaders.at("sky").u_locs["ProjectionMatrix"] = -1;
 }
 
 // load models
@@ -283,19 +286,16 @@ void ApplicationSolar::initializeGeometry() {
 
   //-----------Planets--------------------------
   planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
-
   // generate vertex array object
   glGenVertexArrays(1, &planet_object.vertex_AO);
   // bind the array for attaching buffers
   glBindVertexArray(planet_object.vertex_AO);
-
   // generate generic buffer
   glGenBuffers(1, &planet_object.vertex_BO);
   // bind this as an vertex array buffer containing all attributes
   glBindBuffer(GL_ARRAY_BUFFER, planet_object.vertex_BO);
   // configure currently bound array buffer
   glBufferData(GL_ARRAY_BUFFER, sizeof(float) * planet_model.data.size(), planet_model.data.data(), GL_STATIC_DRAW);
-
   // activate first attribute on gpu
   glEnableVertexAttribArray(0);
   // first attribute is 3 floats with no offset & stride
@@ -308,25 +308,65 @@ void ApplicationSolar::initializeGeometry() {
   glEnableVertexAttribArray(2);
    // second attribute is 3 floats with no offset & stride
   glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
-
    // generate generic buffer
   glGenBuffers(1, &planet_object.element_BO);
   // bind this as an vertex array buffer containing all attributes
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planet_object.element_BO);
   // configure currently bound array buffer
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * planet_model.indices.size(), planet_model.indices.data(), GL_STATIC_DRAW);
-
   // store type of primitive to draw
   planet_object.draw_mode = GL_TRIANGLES;
   // transfer number of indices to model object
   planet_object.num_elements = GLsizei(planet_model.indices.size());
+
+  //-----Skybox
+  sky_model = model_loader::obj(m_resource_path + "models/skybox.obj", model::NORMAL);
+  // generate vertex array object
+  glGenVertexArrays(1, &sky_object.vertex_AO);
+  // bind the array for attaching buffers
+  glBindVertexArray(sky_object.vertex_AO);
+  // generate generic buffer
+  glGenBuffers(1, &sky_object.vertex_BO);
+  // bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ARRAY_BUFFER, sky_object.vertex_BO);
+  // configure currently bound array buffer
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sky_model.data.size(), sky_model.data.data(), GL_STATIC_DRAW);
+  // activate first attribute on gpu
+  glEnableVertexAttribArray(0);
+  // first attribute is 3 floats with no offset & stride
+  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
+  // generate generic buffer
+  glGenBuffers(1, &sky_object.element_BO);
+  // bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sky_object.element_BO);
+  // configure currently bound array buffer
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * sky_model.indices.size(), sky_model.indices.data(), GL_STATIC_DRAW);
+  // store type of primitive to draw
+  sky_object.draw_mode = GL_TRIANGLES;
+  // transfer number of indices to model object
+  sky_object.num_elements = GLsizei(sky_model.indices.size());
+
 }
 
 void ApplicationSolar::render() const{
+  renderSky();
   renderStars();
   renderSolarsystem();
 }
 
+void ApplicationSolar::renderSky() const{
+  glDepthMask(GL_FALSE);
+  glUseProgram(m_shaders.at("sky").handle);
+  glActiveTexture(GL_TEXTURE0);
+
+  int color_sampler_location = glGetUniformLocation(m_shaders.at("sky").handle, "ColorTex");
+  glBindTexture(GL_TEXTURE_2D, handles_.find("Sky")->second);
+  glUniform1i(color_sampler_location,0);
+
+  glBindVertexArray(sky_object.vertex_AO);
+  glDrawElements(sky_object.draw_mode, sky_object.num_elements, model::INDEX.type, NULL);
+  glDepthMask(GL_TRUE);
+}
 
 void ApplicationSolar::renderStars() const {
   // bind shader to upload uniforms
@@ -349,7 +389,6 @@ void ApplicationSolar::renderOrbits() const {
   glDrawArrays(orbit_object.draw_mode, 0, (int)m_orbits.size());
 }
 
-
 void ApplicationSolar::renderSolarsystem() const{
   auto k = scene.getRoot()->getChildren("sun");
   Geometrynode *gn{dynamic_cast<Geometrynode*>(k)};
@@ -363,44 +402,36 @@ void ApplicationSolar::renderSolarsystem() const{
 void ApplicationSolar::renderPlanets(Geometrynode* gn) const {
   // bind shader to upload uniforms
   glUseProgram(m_shaders.at("planet").handle);
-  //for(unsigned int i = 0; i < scene.getRoot()->getChildren("sun")->getChildrenList().size(); i++){
-  // for(auto i : scene.getRoot()->getChildren("sun")->getChildrenList()){
-  //   Geometrynode *gn{dynamic_cast<Geometrynode*>(i)};
-  //   if(gn){
-      glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*gn->getRot_speed()), glm::fvec3{0.0f, 1.0f, 0.0f});
-      //glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*solarsystem_planets_[i].rotation_speed), glm::fvec3{0.0f, 1.0f, 0.0f});
-      //model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f*solarsystem_planets_[i].distance});
-      float act_dis = gn->getDis();
-      model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -3.0f*act_dis});
-      //integrated part
-      model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
-      //glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
-      float act_size = 4*gn->getSize();
-      glm::fvec3 scale {act_size, act_size, act_size};
-      //model_matrix = glm::scale(model_matrix, scale);
-      //glm::fvec3 planet_color= {0.7,0.0, 0.2*i};
-      glm::fvec3 planet_color= gn->getColor();
-      //integrated parts
-      glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(model_matrix));
-      glUniform3f(m_shaders.at("planet").u_locs.at("Planet_Color"),planet_color.x, planet_color.y, planet_color.z);
-      //extra matrix for normal transformation to keep them orthogonal to surface
-      glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(view_matrix_) * model_matrix);
-      glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
-                         1, GL_FALSE, glm::value_ptr(normal_matrix));
-      glUniform1f(m_shaders.at("planet").u_locs.at("ShadingMethod"), shader_mode);
-
-      //bind the VAO to draw
-      glBindVertexArray(planet_object.vertex_AO);
-      //draw bound vertex array using bound shaderscene
-      //Texrepart begins
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, gn->getTexture());
-      glUniform1i(m_shaders.at("planet").u_locs.at("Planets_Texture"), 0);
-
-      glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
-    // }
- //}
-}
+    glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*gn->getRot_speed()), glm::fvec3{0.0f, 1.0f, 0.0f});
+    //glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()*solarsystem_planets_[i].rotation_speed), glm::fvec3{0.0f, 1.0f, 0.0f});
+    //model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f*solarsystem_planets_[i].distance});
+    float act_dis = gn->getDis();
+    model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -3.0f*act_dis});
+    //integrated part
+    model_matrix = glm::rotate(model_matrix, float(glfwGetTime()), glm::fvec3{0.0f, 1.0f, 0.0f});
+    //glm::fvec3 scale {(9-i)/4, (9-i)/4, (9-i)/4};
+    float act_size = 4*gn->getSize();
+    glm::fvec3 scale {act_size, act_size, act_size};
+    //model_matrix = glm::scale(model_matrix, scale);
+    //glm::fvec3 planet_color= {0.7,0.0, 0.2*i};
+    glm::fvec3 planet_color= gn->getColor();
+    //integrated parts
+    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(model_matrix));
+    glUniform3f(m_shaders.at("planet").u_locs.at("Planet_Color"),planet_color.x, planet_color.y, planet_color.z);
+    //extra matrix for normal transformation to keep them orthogonal to surface
+    glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(view_matrix_) * model_matrix);
+    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
+                       1, GL_FALSE, glm::value_ptr(normal_matrix));
+    glUniform1f(m_shaders.at("planet").u_locs.at("ShadingMethod"), shader_mode);
+    //bind the VAO to draw
+    glBindVertexArray(planet_object.vertex_AO);
+    //draw bound vertex array using bound shaderscene
+    //Texrepart begins
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gn->getTexture());
+    glUniform1i(m_shaders.at("planet").u_locs.at("Planets_Texture"), 0);
+    glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+  }
 
 //string input to upload View und upload projection  mit stars orbit or planet input
 void ApplicationSolar::uploadView(std::string const& object) {
@@ -428,7 +459,6 @@ void ApplicationSolar::uploadUniforms() {
 }
 
 ///////////////////////////// callback functions for window events ////////////
-// handle key input
 void ApplicationSolar::keyCallback(int key, int action, int mods) {
   if (key == GLFW_KEY_W  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     view_matrix_ = glm::translate(view_matrix_, glm::fvec3{0.0f, 0.0f, -0.1f});
@@ -467,7 +497,6 @@ std::cout << glm::to_string(projection_matrix_) << std::endl;
 
 //handle delta mouse movement input
 void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
-
   // mouse handling
   //std::cout<<"mouse update: "<<pos_x<<" , "<<pos_y<<"\n";
   view_matrix_ = glm::rotate(view_matrix_, float(pos_x)/500, glm::fvec3{0.0f, -1.0f, 0.0f});
@@ -476,7 +505,6 @@ void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
   uploadView(i);
   }
   //we always need to upload, because camera is center
-
 }
 
 //handle resizing
@@ -488,7 +516,6 @@ void ApplicationSolar::resizeCallback(unsigned width, unsigned height) {
   uploadProjection(i);
   }
 }
-
 
 // exe entry point
 int main(int argc, char* argv[]) {

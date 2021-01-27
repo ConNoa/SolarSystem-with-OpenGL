@@ -41,12 +41,16 @@ class ApplicationSolar : public Application {
 
     void renderOrbits() const;
 
+    void renderSky() const;//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch
+
   protected:
     GLuint initTexObj(pixel_data tex_data_in);
     //added  Stars and Orbits
     void initializeStars();
 
     void initializeOrbits();
+
+    void initializeSkybox();//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch
 
     void initializeLabels();
 
@@ -77,6 +81,7 @@ class ApplicationSolar : public Application {
     model_object planet_object;
     model_object star_object;
     model_object orbit_object;
+    model_object sky_object;
 
     Scenegraph scene;
     // camera transform matrix
@@ -87,6 +92,7 @@ class ApplicationSolar : public Application {
     model planet_model;
     model star_model;
     model orbit_model;
+    model sky_model;
 
     int Stars_num;
     GLfloat shader_mode;
