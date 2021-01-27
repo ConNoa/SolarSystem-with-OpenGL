@@ -103,7 +103,7 @@ class ApplicationSolar : public Application {
     GLuint sky_sphere_tex_obj;
     pixel_data sky_sphere_texture;
     GLuint texcube_obj;
-
+    glm::vec4 box_coords;
     GLuint texture_object;
     pixel_data test_image;
   //  std::vector<float> Quad_vector= {-1.0f,-1.0f,0.0f,0.0f,0.0f,1.0f,-1.0f,0.0f,1.0f,0.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,1.0f,1.0f,0.0f,1.0f,1.0f};

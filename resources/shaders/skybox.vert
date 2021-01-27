@@ -22,18 +22,22 @@
 //https://gamedev.stackexchange.com/questions/60313/implementing-a-skybox-with-glsl-version-330
 
 #version 330
+
+layout(location = 0) in vec4 in_Position;
+
+
+
 uniform mat4 uProjectionMatrix;
 uniform mat4 uViewMatrix;
 
-in vec4 aPosition;
 
 smooth out vec3 eyeDirection;
 
 void main() {
     mat4 inverseProjection = inverse(uProjectionMatrix);
     mat3 inverseModelview = transpose(mat3(uViewMatrix));
-    vec3 unprojected = (inverseProjection * aPosition).xyz;
+    vec3 unprojected = (inverseProjection * in_Position).xyz;
     eyeDirection = inverseModelview * unprojected;
 
-    gl_Position = aPosition;
+    gl_Position = in_Position;
 }

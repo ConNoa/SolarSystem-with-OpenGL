@@ -45,7 +45,8 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
 
 
 
-     create_cube_map(f, ba, t, bo, le, ri, &texcube_obj);
+     //create_cube_map(f, ba, t, bo, le, ri, &texcube_obj);
+     box_coords = {-1,-1; 1,-1; 1,1; -1,1};
 
 
 
@@ -163,6 +164,9 @@ bool ApplicationSolar::load_cube_map_side(GLuint texture, GLenum side_target, co
 
 
 
+
+
+
 void ApplicationSolar::initializeSkybox(){
   // float cubemap_coords[] = {
   //       -10.0f,  10.0f, -10.0f,
@@ -222,11 +226,11 @@ void ApplicationSolar::initializeSkybox(){
     // activate first attribute on gpu
   glEnableVertexAttribArray(0);
   // first attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
-  // activate third attribute on gpu
-  glEnableVertexAttribArray(1);
-  // third attribute is 2 floats with no offset & stride
-  glVertexAttribPointer(1, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::TEXCOORD]);
+  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::POSITION]);
+   // activate third attribute on gpu
+  // glEnableVertexAttribArray(1);
+  // // third attribute is 2 floats with no offset & stride
+  // glVertexAttribPointer(1, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::TEXCOORD]);
   // // activate first attribute on gpu
   // glEnableVertexAttribArray(0);
   // // first attribute is 3 floats with no offset & stride
@@ -524,9 +528,32 @@ void ApplicationSolar::initializeGeometry() {
 
 void ApplicationSolar::render() const{
   renderSky();
-  renderStars();
+//  renderStars();
   renderSolarsystem();
 }
+
+
+void ApplicationSolar::initializeSkyBoxTex(){
+  glActiveTexture(GL_TEXTURE0);
+  glGenTextures(1, &skybox.handle);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.handle);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+  for(unsigned int idx = 0; idx < skybox_textures.size(); ++idx){
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + idx, 0, skybox_textures[idx].m_pixelData.channels, (GLsizei)skybox_textures[idx].m_pixelData.width,
+                (GLsizei)skybox_textures[idx].m_pixelData.height, 0, skybox_textures[idx].m_pixelData.channels,
+                 skybox_textures[idx].m_pixelData.channel_type, skybox_textures[idx].m_pixelData.ptr());
+  }
+
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+}
+
+
 
 void ApplicationSolar::renderSky() const{
   glDepthMask(GL_FALSE);
