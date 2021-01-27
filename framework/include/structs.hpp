@@ -26,7 +26,8 @@ struct Planet{
   {}
 
 
-      Planet(std::string planet_name, float size_in, float rotation_speed_in, float distance_in, glm::vec3 color_in, pixel_data tex_data_in) : name(planet_name), size(size_in), rotation_speed(rotation_speed_in), distance(distance_in), color(color_in), texture_data(tex_data_in){}
+      Planet(std::string planet_name, float size_in, float rotation_speed_in, float distance_in, glm::vec3 color_in)
+                  : name(planet_name), size(size_in), rotation_speed(rotation_speed_in), distance(distance_in), color(color_in){}
       std::string name;
       float size;
       float rotation_speed;

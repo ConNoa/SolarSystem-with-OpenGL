@@ -4,7 +4,7 @@
 Node::Node():
     parent_{},
     children_{std::list<Node*>()},
-    name_{},
+    name_{"unnamedobject"},
     path_{},
     depth_{0},
     localTransform_{},

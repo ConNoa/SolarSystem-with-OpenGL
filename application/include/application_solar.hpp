@@ -33,7 +33,9 @@ class ApplicationSolar : public Application {
     // draw all objects
     void render() const;
 
-    void renderPlanets() const;
+    void renderSolarsystem() const;
+
+    void renderPlanets(Geometrynode* gn) const;
 
     void renderStars() const;
 
@@ -49,7 +51,7 @@ class ApplicationSolar : public Application {
     void initializeLabels();
 
     // initialize all Planets and the Moons
-    std::vector<GLuint> initializeTextures();
+    void initializeTextures(std::vector<std::pair<std::string, pixel_data>> tex_files);
 
     void initializeFramebuffer();
 
@@ -100,6 +102,7 @@ class ApplicationSolar : public Application {
     GLuint fbo_handle;
     //DEBUG
     GLuint texture_object;
+    std::map<std::string, GLuint>  handles_;
 
     pixel_data test_image;
 };
