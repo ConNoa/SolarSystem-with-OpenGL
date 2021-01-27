@@ -34,12 +34,41 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,projection_matrix_{utils::calculate_projection_matrix(initial_aspect_ratio)}
  ,shader_mode {3.0f}
    {
+     test_image = texture_loader::file("../resources/textures/sky_sphere.png");
+
+     char* f = "../resources/textures/front.png";
+     char* ba = "../resources/textures/back.png";
+     char* t = "../resources/textures/top.png";
+     char* bo = "../resources/textures/bottom.png";
+     char* le = "../resources/textures/left.png";
+     char* ri = "../resources/textures/right.png";
+
+
+
+     create_cube_map(f, ba, t, bo, le, ri, &texcube_obj);
+
+
+
+     glActiveTexture(GL_TEXTURE0);
+     glGenTextures(1, &texture_object);
+     glBindTexture(GL_TEXTURE_2D, texture_object);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+         glTexImage2D(GL_TEXTURE_2D, 0, test_image.channels, test_image.width, test_image.height, 0,
+                 test_image.channels, test_image.channel_type, test_image.ptr());
+           std::cout << "init test-tuexture" <<"\n";
+
+
       initializeLabels();
       initializeStars();
       loadTextures();
+      initializeSkybox();
       initializePlanets();
       initializeGeometry();
       initializeShaderPrograms();
+      //initializeFramebuffer();
     }
 
 
@@ -51,32 +80,33 @@ ApplicationSolar::~ApplicationSolar() {
 
 
 void ApplicationSolar::initializeLabels(){
+  Labels.push_back("sky");
   Labels.push_back("planet");
-  Labels.push_back("stars");
+//  Labels.push_back("stars");
   Labels.push_back("orbits");
 }
 
-void ApplicationSolar::initializeFramebuffer(){
-  glGenRenderbuffers(1, &rb_handle);
-  glBindRenderbuffer(GL_RENDERBUFFER, rb_handle);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 800, 600);
-
-  glActiveTexture(GL_TEXTURE0);
-  glGenTextures(1, &framebuffer_tex_obj);
-  glBindTexture(GL_TEXTURE_2D, framebuffer_tex_obj);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-  glGenFramebuffers(1, &fbo_handle);
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, framebuffer_tex_obj, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb_handle);
-  GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
-  glDrawBuffers(1 , draw_buffers);
-  GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  if (status != GL_FRAMEBUFFER_COMPLETE) { std::cout << "Frambuffer läuft nicht " << '\n';}
-}
+// void ApplicationSolar::initializeFramebuffer(){
+//   glGenRenderbuffers(1, &rb_handle);
+//   glBindRenderbuffer(GL_RENDERBUFFER, rb_handle);
+//   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 800, 600);
+//
+//   glActiveTexture(GL_TEXTURE0);
+//   glGenTextures(1, &framebuffer_tex_obj);
+//   glBindTexture(GL_TEXTURE_2D, framebuffer_tex_obj);
+//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+//
+//   glGenFramebuffers(1, &fbo_handle);
+//   glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
+//   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, framebuffer_tex_obj, 0);
+//   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb_handle);
+//   GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
+//   glDrawBuffers(1 , draw_buffers);
+//   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+//   if (status != GL_FRAMEBUFFER_COMPLETE) { std::cout << "Frambuffer läuft nicht " << '\n';}
+// }
 
 void ApplicationSolar::initializeStars(){
   //Erstellung eines Sterne-Vektors mit positions und farbangaben
@@ -99,6 +129,126 @@ void ApplicationSolar::initializeStars(){
   }
 }
 
+
+
+void ApplicationSolar::create_cube_map(const char* front, const char* back, const char* top,
+                      const char* bottom, const char* left,const char* right,GLuint* tex_cube) {
+  // generate a cube-map texture to hold all the sides
+  glActiveTexture(GL_TEXTURE0);
+  glGenTextures(1, tex_cube);
+
+  // load each image and copy into a side of the cube-map texture
+  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, front);
+  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, back);
+  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, top);
+  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, bottom);
+  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, left);
+  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_POSITIVE_X, right);
+  // format cube map texture
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
+
+bool ApplicationSolar::load_cube_map_side(GLuint texture, GLenum side_target, const char* file_name) {
+  glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+  auto temp = texture_loader::file(file_name);
+  // copy image data into 'target' side of cube map
+  glTexImage2D(GL_TEXTURE_2D, 0, temp.channels, temp.width, temp.height, 0,
+              temp.channels, temp.channel_type, temp.ptr());
+  return true;
+}
+
+
+
+void ApplicationSolar::initializeSkybox(){
+  // float cubemap_coords[] = {
+  //       -10.0f,  10.0f, -10.0f,
+  //       -10.0f, -10.0f, -10.0f,
+  //        10.0f, -10.0f, -10.0f,
+  //        10.0f, -10.0f, -10.0f,
+  //        10.0f,  10.0f, -10.0f,
+  //       -10.0f,  10.0f, -10.0f,
+  //
+  //       -10.0f, -10.0f,  10.0f,
+  //       -10.0f, -10.0f, -10.0f,
+  //       -10.0f,  10.0f, -10.0f,
+  //       -10.0f,  10.0f, -10.0f,
+  //       -10.0f,  10.0f,  10.0f,
+  //       -10.0f, -10.0f,  10.0f,
+  //
+  //        10.0f, -10.0f, -10.0f,
+  //        10.0f, -10.0f,  10.0f,
+  //        10.0f,  10.0f,  10.0f,
+  //        10.0f,  10.0f,  10.0f,
+  //        10.0f,  10.0f, -10.0f,
+  //        10.0f, -10.0f, -10.0f,
+  //
+  //       -10.0f, -10.0f,  10.0f,
+  //       -10.0f,  10.0f,  10.0f,
+  //        10.0f,  10.0f,  10.0f,
+  //        10.0f,  10.0f,  10.0f,
+  //        10.0f, -10.0f,  10.0f,
+  //       -10.0f, -10.0f,  10.0f,
+  //
+  //       -10.0f,  10.0f, -10.0f,
+  //        10.0f,  10.0f, -10.0f,
+  //        10.0f,  10.0f,  10.0f,
+  //        10.0f,  10.0f,  10.0f,
+  //       -10.0f,  10.0f,  10.0f,
+  //       -10.0f,  10.0f, -10.0f,
+  //
+  //       -10.0f, -10.0f, -10.0f,
+  //       -10.0f, -10.0f,  10.0f,
+  //        10.0f, -10.0f, -10.0f,
+  //        10.0f, -10.0f, -10.0f,
+  //       -10.0f, -10.0f,  10.0f,
+  //        10.0f, -10.0f,  10.0f};
+
+  model sky_model = model_loader::obj(m_resource_path + "models/skybox.obj", model::NORMAL);
+  // generate vertex array object
+  glGenVertexArrays(1, &sky_object.vertex_AO);
+  // bind the array for attaching buffers
+  glBindVertexArray(sky_object.vertex_AO);
+  // generate generic buffer
+  glGenBuffers(1, &sky_object.vertex_BO);
+  // bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ARRAY_BUFFER, sky_object.vertex_BO);
+  // configure currently bound array buffer
+  glBufferData(GL_ARRAY_BUFFER, sky_model.data.size() * sizeof(float), sky_model.data.data(), GL_STATIC_DRAW);
+
+    // activate first attribute on gpu
+  glEnableVertexAttribArray(0);
+  // first attribute is 3 floats with no offset & stride
+  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
+  // activate third attribute on gpu
+  glEnableVertexAttribArray(1);
+  // third attribute is 2 floats with no offset & stride
+  glVertexAttribPointer(1, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::TEXCOORD]);
+  // // activate first attribute on gpu
+  // glEnableVertexAttribArray(0);
+  // // first attribute is 3 floats with no offset & stride
+  // glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
+  // // activate second attribute on gpu
+  // glEnableVertexAttribArray(1);
+  // // first attribute is 3 floats with no offset & stride
+  // glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
+  // generate generic buffer
+  glGenBuffers(1, &sky_object.element_BO);
+  // bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sky_object.element_BO);
+  // configure currently bound array buffer
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * sky_model.indices.size(), sky_model.indices.data(), GL_STATIC_DRAW);
+  //store type of primitive to draw
+  sky_object.draw_mode = GL_TRIANGLE_STRIP;
+  // transfer number of indices to model object
+  sky_object.num_elements = GLsizei(sky_model.indices.size());
+}
+
+
+
 void ApplicationSolar::initializeTextures(std::vector<std::pair<std::string, pixel_data>> tex_files){
   for (auto i: tex_files)
   {
@@ -111,14 +261,21 @@ void ApplicationSolar::initializeTextures(std::vector<std::pair<std::string, pix
     glBindTexture(GL_TEXTURE_2D, tex_handle);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, tmp_px_dt.channels, tmp_px_dt.width, tmp_px_dt.height, 0,
                 tmp_px_dt.channels, tmp_px_dt.channel_type, tmp_px_dt.ptr());
 
     handles_.insert(std::make_pair(tmp_string, tex_handle));
-  }
-  return;
+    }
+    // glActiveTexture(GL_TEXTURE1);
+    // glGenTextures(1, &sky_sphere_tex_obj);
+    // glBindTexture(GL_TEXTURE_2D, sky_sphere_tex_obj);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glTexImage2D(GL_TEXTURE_2D, 0, sky_sphere_texture.channels, sky_sphere_texture.width, sky_sphere_texture.height, 0,
+    //             sky_sphere_texture.channels, sky_sphere_texture.channel_type, sky_sphere_texture.ptr());
+
 }
 
 GLuint ApplicationSolar::initTexObj(pixel_data tex_data_in){
@@ -149,6 +306,8 @@ void ApplicationSolar::loadTextures(){
     tex_files.push_back({"Neptun", texture_loader::file("../resources/textures/neptunemap.png")});
 
     initializeTextures(tex_files);
+
+    sky_sphere_texture = texture_loader::file("../resources/textures/sky_sphere.png");
 
 }
 
@@ -182,75 +341,124 @@ void ApplicationSolar::initializePlanets(){
                                             handles_.find(solarsystem_planets_[i].name)->second);
     planet->setGeometry(planet_model);
     sun->addChildren(planet);
-    std::cout << "init planets" <<"\n";
   }
 }
-
 // load shader sources
 void ApplicationSolar::initializeShaderPrograms() {
   // store shader program objects in container
   m_shaders.emplace("planet", shader_program{{{GL_VERTEX_SHADER,m_resource_path + "shaders/planet.vert"},
                                            {GL_FRAGMENT_SHADER, m_resource_path + "shaders/planet.frag"}}});
+    // request uniform locations for shader program
+       m_shaders.at("planet").u_locs["NormalMatrix"] = -1;
+       m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
+       m_shaders.at("planet").u_locs["ViewMatrix"] = -1;
+       m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
+       m_shaders.at("planet").u_locs["ShadingMethod"] = -1;
+       m_shaders.at("planet").u_locs["Planet_Color"] = -1;
+       m_shaders.at("planet").u_locs["Planets_Texture"] = -1;
+
   m_shaders.emplace("stars", shader_program{{{GL_VERTEX_SHADER,m_resource_path + "shaders/stars.vert"},
                                            {GL_FRAGMENT_SHADER, m_resource_path + "shaders/stars.frag"}}});
+        m_shaders.at("stars").u_locs["ViewMatrix"] = -1;
+        m_shaders.at("stars").u_locs["ProjectionMatrix"] = -1;
+
   m_shaders.emplace("orbits", shader_program{{{GL_VERTEX_SHADER,m_resource_path + "shaders/stars.vert"},
                                            {GL_FRAGMENT_SHADER, m_resource_path + "shaders/stars.frag"}}});
+       m_shaders.at("orbits").u_locs["ViewMatrix"] = -1;
+       m_shaders.at("orbits").u_locs["ProjectionMatrix"] = -1;
+
   m_shaders.emplace("sky", shader_program{{{GL_VERTEX_SHADER,m_resource_path + "shaders/skybox.vert"},
                                             {GL_FRAGMENT_SHADER, m_resource_path + "shaders/skybox.frag"}}});
+      // request uniform locations for shader program
+          m_shaders.at("sky").u_locs["ViewMatrix"] = -1;
+          m_shaders.at("sky").u_locs["ProjectionMatrix"] = -1;
+          m_shaders.at("sky").u_locs["ColorTex"] = -1;
+  //
+  // m_shaders.emplace("quad", shader_program{{{GL_VERTEX_SHADER,m_resource_path + "shaders/quad.vert"},
+  //                                           {GL_FRAGMENT_SHADER, m_resource_path + "shaders/quad.frag"}}});
+  //         m_shaders.at("quad").u_locs["ColorTex"] = -1;
+  //         m_shaders.at("quad").u_locs["grey_bool"] = -1;
+  //         m_shaders.at("quad").u_locs["horizont_bool"] = -1;
+  //         m_shaders.at("quad").u_locs["vert_bool"] = -1;
+  //         //m_shaders.at("quad").u_locs["blur_bool"] = -1;
 
-  // request uniform locations for shader program
-  m_shaders.at("planet").u_locs["NormalMatrix"] = -1;
-  m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
-  m_shaders.at("planet").u_locs["ViewMatrix"] = -1;
-  m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
-  m_shaders.at("planet").u_locs["ShadingMethod"] = -1;
-  m_shaders.at("planet").u_locs["Planet_Color"] = -1;
-  m_shaders.at("planet").u_locs["Planets_Texture"] = -1;
-  m_shaders.at("stars").u_locs["ViewMatrix"] = -1;
-  m_shaders.at("stars").u_locs["ProjectionMatrix"] = -1;
-  m_shaders.at("orbits").u_locs["ViewMatrix"] = -1;
-  m_shaders.at("orbits").u_locs["ProjectionMatrix"] = -1;
-  m_shaders.at("sky").u_locs["ViewMatrix"] = -1;
-  m_shaders.at("sky").u_locs["ProjectionMatrix"] = -1;
 }
 
 // load models
 void ApplicationSolar::initializeGeometry() {
 
-  //-----------------Orbits------------------------
-  orbit_model = model{m_orbits, (model::POSITION ), {0}};
+  // //-----------------Orbits------------------------
+  // orbit_model = model{m_orbits, (model::POSITION ), {0}};
+  //
+  // // generate vertex array object
+  // glGenVertexArrays(1, &orbit_object.vertex_AO);
+  // // bind the array for attaching buffers
+  // glBindVertexArray(orbit_object.vertex_AO);
+  //
+  // // generate generic buffer
+  // glGenBuffers(1, &orbit_object.vertex_BO);
+  // // bind this as an vertex array buffer containing all attributes
+  // glBindBuffer(GL_ARRAY_BUFFER, orbit_object.vertex_BO);
+  // // configure currently bound array buffer
+  // glBufferData(GL_ARRAY_BUFFER, sizeof(float) * orbit_model.data.size(), orbit_model.data.data(), GL_STATIC_DRAW);
+  //
+  // // activate first attribute on gpu
+  // glEnableVertexAttribArray(0);
+  // // first attribute is 3 floats with no offset & stride
+  // glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, orbit_model.vertex_bytes, orbit_model.offsets[model::POSITION]);
+  //  // generate generic buffer
+  // glGenBuffers(1, &orbit_object.element_BO);
+  // // bind this as an vertex array buffer containing all attributes
+  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, orbit_object.element_BO);
+  // // configure currently bound array buffer
+  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * orbit_model.indices.size(), orbit_model.indices.data(), GL_STATIC_DRAW);
+  // // store type of primitive to draw
+  // orbit_object.draw_mode = GL_LINES;
+  // // transfer number of indices to model object
+  // orbit_object.num_elements = GLsizei(orbit_model.indices.size());
 
-  // generate vertex array object
-  glGenVertexArrays(1, &orbit_object.vertex_AO);
+
+  //-----------Planets--------------------------
+  planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
+  // generate vertex array objectgl mirrored repeat
+  glGenVertexArrays(1, &planet_object.vertex_AO);
   // bind the array for attaching buffers
-  glBindVertexArray(orbit_object.vertex_AO);
-
+  glBindVertexArray(planet_object.vertex_AO);
   // generate generic buffer
-  glGenBuffers(1, &orbit_object.vertex_BO);
+  glGenBuffers(1, &planet_object.vertex_BO);
   // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ARRAY_BUFFER, orbit_object.vertex_BO);
+  glBindBuffer(GL_ARRAY_BUFFER, planet_object.vertex_BO);
   // configure currently bound array buffer
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * orbit_model.data.size(), orbit_model.data.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * planet_model.data.size(), planet_model.data.data(), GL_STATIC_DRAW);
 
   // activate first attribute on gpu
   glEnableVertexAttribArray(0);
   // first attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, orbit_model.vertex_bytes, orbit_model.offsets[model::POSITION]);
-   // generate generic buffer
-  glGenBuffers(1, &orbit_object.element_BO);
+  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::POSITION]);
+  // activate second attribute on gpu
+  glEnableVertexAttribArray(1);
+  // second attribute is 3 floats with no offset & stride
+  glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::NORMAL]);
+  // activate second attribute on gpu
+  glEnableVertexAttribArray(2);
+   // second attribute is 3 floats with no offset & stride
+  glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
+
+  // generate generic buffer
+  glGenBuffers(1, &planet_object.element_BO);
   // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, orbit_object.element_BO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planet_object.element_BO);
   // configure currently bound array buffer
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * orbit_model.indices.size(), orbit_model.indices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * planet_model.indices.size(), planet_model.indices.data(), GL_STATIC_DRAW);
   // store type of primitive to draw
-  orbit_object.draw_mode = GL_LINES;
+  planet_object.draw_mode = GL_TRIANGLES;
   // transfer number of indices to model object
-  orbit_object.num_elements = GLsizei(orbit_model.indices.size());
+  planet_object.num_elements = GLsizei(planet_model.indices.size());
 
   //------------------Stars--------------------
   star_model = model{Stars, (model::POSITION + model::NORMAL), {0}};
 
-  // generate vertex array object
+  // generate vertex array objectgl mirrored repeat
   glGenVertexArrays(1, &star_object.vertex_AO);
   // bind the array for attaching buffers
   glBindVertexArray(star_object.vertex_AO);
@@ -261,7 +469,6 @@ void ApplicationSolar::initializeGeometry() {
   glBindBuffer(GL_ARRAY_BUFFER, star_object.vertex_BO);
   // configure currently bound array buffer
   glBufferData(GL_ARRAY_BUFFER, sizeof(float) * star_model.data.size(), star_model.data.data(), GL_STATIC_DRAW);
-
   // activate first attribute on gpu
   glEnableVertexAttribArray(0);
   // first attribute is 3 floats with no offset & stride
@@ -284,67 +491,34 @@ void ApplicationSolar::initializeGeometry() {
   star_object.num_elements = GLsizei(star_model.indices.size());
 
 
-  //-----------Planets--------------------------
-  planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
-  // generate vertex array object
-  glGenVertexArrays(1, &planet_object.vertex_AO);
-  // bind the array for attaching buffers
-  glBindVertexArray(planet_object.vertex_AO);
-  // generate generic buffer
-  glGenBuffers(1, &planet_object.vertex_BO);
-  // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ARRAY_BUFFER, planet_object.vertex_BO);
-  // configure currently bound array buffer
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * planet_model.data.size(), planet_model.data.data(), GL_STATIC_DRAW);
-  // activate first attribute on gpu
-  glEnableVertexAttribArray(0);
-  // first attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::POSITION]);
-  // activate second attribute on gpu
-  glEnableVertexAttribArray(1);
-  // second attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::NORMAL]);
-  // activate second attribute on gpu
-  glEnableVertexAttribArray(2);
-   // second attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
-   // generate generic buffer
-  glGenBuffers(1, &planet_object.element_BO);
-  // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planet_object.element_BO);
-  // configure currently bound array buffer
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * planet_model.indices.size(), planet_model.indices.data(), GL_STATIC_DRAW);
-  // store type of primitive to draw
-  planet_object.draw_mode = GL_TRIANGLES;
-  // transfer number of indices to model object
-  planet_object.num_elements = GLsizei(planet_model.indices.size());
 
-  //-----Skybox
-  sky_model = model_loader::obj(m_resource_path + "models/skybox.obj", model::NORMAL);
-  // generate vertex array object
-  glGenVertexArrays(1, &sky_object.vertex_AO);
-  // bind the array for attaching buffers
-  glBindVertexArray(sky_object.vertex_AO);
-  // generate generic buffer
-  glGenBuffers(1, &sky_object.vertex_BO);
-  // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ARRAY_BUFFER, sky_object.vertex_BO);
-  // configure currently bound array buffer
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sky_model.data.size(), sky_model.data.data(), GL_STATIC_DRAW);
-  // activate first attribute on gpu
-  glEnableVertexAttribArray(0);
-  // first attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
-  // generate generic buffer
-  glGenBuffers(1, &sky_object.element_BO);
-  // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sky_object.element_BO);
-  // configure currently bound array buffer
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * sky_model.indices.size(), sky_model.indices.data(), GL_STATIC_DRAW);
-  // store type of primitive to draw
-  sky_object.draw_mode = GL_TRIANGLES;
-  // transfer number of indices to model object
-  sky_object.num_elements = GLsizei(sky_model.indices.size());
+  // //-----Skybox------------
+  // //sky_model = model_loader::obj(m_resource_path + "models/skybox.obj", model::NORMAL);
+  // // generate vertex array object
+  // glGenVertexArrays(1, &sky_object.vertex_AO);
+  // // bind the array for attaching buffers
+  // glBindVertexArray(sky_object.vertex_AO);
+  // // generate generic buffer
+  // glGenBuffers(1, &sky_object.vertex_BO);
+  // // bind this as an vertex array buffer containing all attributes
+  // glBindBuffer(GL_ARRAY_BUFFER, sky_object.vertex_BO);
+  // // configure currently bound array buffer
+  // glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Quad_vector.size(), Quad_vector.data(), GL_STATIC_DRAW);
+  // // activate first attribute on gpu
+  // glEnableVertexAttribArray(0);
+  // // first attribute is 3 floats with no offset & stride
+  // glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
+  // // generate generic buffer
+  // glGenBuffers(1, &sky_object.element_BO);
+  // // bind this as an vertex array buffer containing all attributes
+  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sky_object.element_BO);
+  // // configure currently bound array buffer
+  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * sky_model.indices.size(), sky_model.indices.data(), GL_STATIC_DRAW);
+  // // store type of primitive to draw
+  // sky_object.draw_mode = GL_TRIANGLE_STRIP;
+  // // transfer number of indices to model object
+  // sky_object.num_elements = GLsizei(Quad_vector.size()/5);
+  // std::cout<<"sky-geo-int-complete"<<"\n";
 
 }
 
@@ -356,15 +530,20 @@ void ApplicationSolar::render() const{
 
 void ApplicationSolar::renderSky() const{
   glDepthMask(GL_FALSE);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
   glUseProgram(m_shaders.at("sky").handle);
   glActiveTexture(GL_TEXTURE0);
 
   int color_sampler_location = glGetUniformLocation(m_shaders.at("sky").handle, "ColorTex");
-  glBindTexture(GL_TEXTURE_2D, handles_.find("Sky")->second);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, texcube_obj);
+//  glBindTexture(GL_TEXTURE_2D, texture_object);
   glUniform1i(color_sampler_location,0);
 
   glBindVertexArray(sky_object.vertex_AO);
   glDrawElements(sky_object.draw_mode, sky_object.num_elements, model::INDEX.type, NULL);
+
   glDepthMask(GL_TRUE);
 }
 
@@ -442,6 +621,7 @@ void ApplicationSolar::uploadView(std::string const& object) {
 
   glUniformMatrix4fv(m_shaders.at(object).u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(object_view_matrix));
+
 }
 
 void ApplicationSolar::uploadProjection(std::string const& object) {
