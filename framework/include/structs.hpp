@@ -60,6 +60,17 @@ struct texture_object {
   GLenum target = GL_NONE;
 };
 
+struct texture{
+  texture(std::string name, pixel_data pixelData)
+    :name_{name}
+    ,pixelDats_{pixelData}
+    {}
+
+    std::string name_;
+    pixel_data pixelDats_;
+};
+
+
 // shader handle and uniform storage
 struct shader_program {
   shader_program(std::map<GLenum, std::string> paths)

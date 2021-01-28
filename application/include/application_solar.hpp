@@ -5,7 +5,6 @@
 #include "model.hpp"
 #include "structs.hpp"
 #include "scenegraph.hpp"
-
 #include "node.hpp"
 #include "pointlightnode.hpp"
 #include "geometrynode.hpp"
@@ -22,24 +21,24 @@ class ApplicationSolar : public Application {
     ApplicationSolar(std::string const& resource_path);
     // free allocated objects
     ~ApplicationSolar();
-
     // react to key input
     void keyCallback(int key, int action, int mods);
     //handle delta mouse movement input
     void mouseCallback(double pos_x, double pos_y);
     //handle resizing
     void resizeCallback(unsigned width, unsigned height);
+
     // draw all objects
     void render() const;
-    void renderSolarsystem() const;
+    void renderSolarsystem() const; //executes  renderPlanets() for Planets & Sun
     void renderPlanets(Geometrynode* gn) const;
     void renderStars() const;
-    void renderOrbits() const;
-    void renderSky() const;//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch
+    void renderOrbits() const;//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch
+    void renderSky() const;
+
 
   protected:
     GLuint initTexObj(pixel_data tex_data_in);
-    //added  Stars and Orbits
     void initializeStars();
     void initializeOrbits();
     void initializeSkybox();//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch
@@ -47,18 +46,22 @@ class ApplicationSolar : public Application {
 
     void initializeLabels();
 
-    void initializeTextures(std::vector<std::pair<std::string, pixel_data>> tex_files);
+    void loadTextures();
+    void initializeTextures();
+
+    void initializeSkyBoxTex();
     void initializeFramebuffer();
     void initializePlanets();
     void initializeShaderPrograms();
     void initializeGeometry();
     void initializePointlights();
+//-------------------------------------------------------
+//     void create_cube_map(const char* front, const char* back, const char* top,
+//                           const char* bottom, const char* left,const char* right,GLuint* tex_cube);
+//
+//     bool load_cube_map_side(GLuint texture, GLenum side_target, const char* file_name);
+// //-------------------------------------------------------
 
-    void create_cube_map(const char* front, const char* back, const char* top,
-                          const char* bottom, const char* left,const char* right,GLuint* tex_cube);
-
-    bool load_cube_map_side(GLuint texture, GLenum side_target, const char* file_name);
-    void loadTextures();
     // update uniform values
     void uploadUniforms();
     // upload projection matrix
@@ -86,26 +89,31 @@ class ApplicationSolar : public Application {
     model orbit_model;
     model sky_model;
 
-
-    int Stars_num;
     GLfloat shader_mode;
     std::vector<Planet>solarsystem_planets_;
-    std::vector<float> Stars;
-    std::vector<float> m_orbits;
-    std::vector<std::string> Labels;
-    GLuint framebuffer_tex_obj;
-    GLuint rb_handle;
-    GLuint fbo_handle;
-    std::map<std::string, GLuint>  handles_;
 
+    std::vector<float> stars_;
+    std::vector<float> orbits_;
+
+    std::vector<std::string> Labels;
+
+    std::vector<texture> planet_textures;
+    std::vector<texture> skybox_textures;
+    std::vector<texture_object>texture_obj_container;
+
+    //std::map<std::string, GLuint>  handles_;
+
+    texture_object skybox_object;
 
     //DEBUG
-    GLuint sky_sphere_tex_obj;
-    pixel_data sky_sphere_texture;
-    GLuint texcube_obj;
-    glm::vec4 box_coords;
-    GLuint texture_object;
-    pixel_data test_image;
+    // GLuint sky_sphere_tex_obj;
+    // GLuint texcube_obj;
+    //
+    // glm::vec4 box_coords;
+    //
+    // pixel_data test_image;
+     pixel_data sky_sphere_texture;
+
   //  std::vector<float> Quad_vector= {-1.0f,-1.0f,0.0f,0.0f,0.0f,1.0f,-1.0f,0.0f,1.0f,0.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,1.0f,1.0f,0.0f,1.0f,1.0f};
 
 };

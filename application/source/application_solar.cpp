@@ -34,42 +34,41 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,projection_matrix_{utils::calculate_projection_matrix(initial_aspect_ratio)}
  ,shader_mode {3.0f}
    {
-     test_image = texture_loader::file("../resources/textures/sky_sphere.png");
-
-     char* f = "../resources/textures/front.png";
-     char* ba = "../resources/textures/back.png";
-     char* t = "../resources/textures/top.png";
-     char* bo = "../resources/textures/bottom.png";
-     char* le = "../resources/textures/left.png";
-     char* ri = "../resources/textures/right.png";
-
-
-
-     //create_cube_map(f, ba, t, bo, le, ri, &texcube_obj);
-     box_coords = {-1,-1; 1,-1; 1,1; -1,1};
-
-
-
-     glActiveTexture(GL_TEXTURE0);
-     glGenTextures(1, &texture_object);
-     glBindTexture(GL_TEXTURE_2D, texture_object);
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-         glTexImage2D(GL_TEXTURE_2D, 0, test_image.channels, test_image.width, test_image.height, 0,
-                 test_image.channels, test_image.channel_type, test_image.ptr());
-           std::cout << "init test-tuexture" <<"\n";
-
+    //  test_image = texture_loader::file("../resources/textures/sky_sphere.png");
+    //
+    //  char* f = "../resources/textures/front.png";
+    //  char* ba = "../resources/textures/back.png";
+    //  char* t = "../resources/textures/top.png";
+    //  char* bo = "../resources/textures/bottom.png";
+    //  char* le = "../resources/textures/left.png";
+    //  char* ri = "../resources/textures/right.png";
+    //
+    //
+     //
+    //  create_cube_map(f, ba, t, bo, le, ri, &texcube_obj);
+    //  box_coords = {-1,-1; 1,-1; 1,1; -1,1};
+     //
+    //  glActiveTexture(GL_TEXTURE0);
+    //  glGenTextures(1, &texture_object);
+    //  glBindTexture(GL_TEXTURE_2D, texture_object);
+    //  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    //  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    //      glTexImage2D(GL_TEXTURE_2D, 0, test_image.channels, test_image.width, test_image.height, 0,
+    //              test_image.channels, test_image.channel_type, test_image.ptr());
+    //        std::cout << "init test-tuexture" <<"\n";
+     //
 
       initializeLabels();
       initializeStars();
-      loadTextures();
-      initializeSkybox();
-      initializePlanets();
+      //initializeOrbits
       initializeGeometry();
       initializeShaderPrograms();
-      //initializeFramebuffer();
+      initializePlanets();
+      loadTextures();               //f
+      initializeTextures();         //f
+      initializeSkybox();           //f
     }
 
 
@@ -83,35 +82,15 @@ ApplicationSolar::~ApplicationSolar() {
 void ApplicationSolar::initializeLabels(){
   Labels.push_back("sky");
   Labels.push_back("planet");
-//  Labels.push_back("stars");
+  Labels.push_back("stars");
   Labels.push_back("orbits");
 }
 
-// void ApplicationSolar::initializeFramebuffer(){
-//   glGenRenderbuffers(1, &rb_handle);
-//   glBindRenderbuffer(GL_RENDERBUFFER, rb_handle);
-//   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 800, 600);
-//
-//   glActiveTexture(GL_TEXTURE0);
-//   glGenTextures(1, &framebuffer_tex_obj);
-//   glBindTexture(GL_TEXTURE_2D, framebuffer_tex_obj);
-//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-//
-//   glGenFramebuffers(1, &fbo_handle);
-//   glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
-//   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, framebuffer_tex_obj, 0);
-//   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb_handle);
-//   GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
-//   glDrawBuffers(1 , draw_buffers);
-//   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-//   if (status != GL_FRAMEBUFFER_COMPLETE) { std::cout << "Frambuffer läuft nicht " << '\n';}
-// }
+
 
 void ApplicationSolar::initializeStars(){
   //Erstellung eines Sterne-Vektors mit positions und farbangaben
-  Stars_num = 200;
+  int Stars_num = 200;
   for (int i = 0; i < Stars_num; ++i)
   {
     float pos_x = float(rand()%20) - 10.0f;
@@ -121,198 +100,88 @@ void ApplicationSolar::initializeStars(){
     float g =  float(rand()%2);
     float b =  float(rand()%100);
 
-    Stars.push_back(pos_x);
-    Stars.push_back(pos_y);
-    Stars.push_back(pos_z);
-    Stars.push_back(r);
-    Stars.push_back(g);
-    Stars.push_back(b);
+    stars_.push_back(pos_x);
+    stars_.push_back(pos_y);
+    stars_.push_back(pos_z);
+    stars_.push_back(r);
+    stars_.push_back(g);
+    stars_.push_back(b);
   }
 }
 
-
-
-void ApplicationSolar::create_cube_map(const char* front, const char* back, const char* top,
-                      const char* bottom, const char* left,const char* right,GLuint* tex_cube) {
-  // generate a cube-map texture to hold all the sides
+void ApplicationSolar::initializeSkybox(){
   glActiveTexture(GL_TEXTURE0);
-  glGenTextures(1, tex_cube);
-
-  // load each image and copy into a side of the cube-map texture
-  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, front);
-  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, back);
-  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, top);
-  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, bottom);
-  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, left);
-  load_cube_map_side(*tex_cube, GL_TEXTURE_CUBE_MAP_POSITIVE_X, right);
-  // format cube map texture
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glGenTextures(1, &skybox_object.handle);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_object.handle);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-}
-
-bool ApplicationSolar::load_cube_map_side(GLuint texture, GLenum side_target, const char* file_name) {
-  glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-  auto temp = texture_loader::file(file_name);
-  // copy image data into 'target' side of cube map
-  glTexImage2D(GL_TEXTURE_2D, 0, temp.channels, temp.width, temp.height, 0,
-              temp.channels, temp.channel_type, temp.ptr());
-  return true;
+  for(unsigned int i = 0; i<skybox_textures.size(); i++){
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, skybox_textures[i].pixelDats_.channels, skybox_textures[i].pixelDats_.width, skybox_textures[i].pixelDats_.height, 0,
+                skybox_textures[i].pixelDats_.channels, skybox_textures[i].pixelDats_.channel_type, skybox_textures[i].pixelDats_.ptr());
+  }
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL,0);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL,0);
 }
 
 
 
 
 
-
-void ApplicationSolar::initializeSkybox(){
-  // float cubemap_coords[] = {
-  //       -10.0f,  10.0f, -10.0f,
-  //       -10.0f, -10.0f, -10.0f,
-  //        10.0f, -10.0f, -10.0f,
-  //        10.0f, -10.0f, -10.0f,
-  //        10.0f,  10.0f, -10.0f,
-  //       -10.0f,  10.0f, -10.0f,
-  //
-  //       -10.0f, -10.0f,  10.0f,
-  //       -10.0f, -10.0f, -10.0f,
-  //       -10.0f,  10.0f, -10.0f,
-  //       -10.0f,  10.0f, -10.0f,
-  //       -10.0f,  10.0f,  10.0f,
-  //       -10.0f, -10.0f,  10.0f,
-  //
-  //        10.0f, -10.0f, -10.0f,
-  //        10.0f, -10.0f,  10.0f,
-  //        10.0f,  10.0f,  10.0f,
-  //        10.0f,  10.0f,  10.0f,
-  //        10.0f,  10.0f, -10.0f,
-  //        10.0f, -10.0f, -10.0f,
-  //
-  //       -10.0f, -10.0f,  10.0f,
-  //       -10.0f,  10.0f,  10.0f,
-  //        10.0f,  10.0f,  10.0f,
-  //        10.0f,  10.0f,  10.0f,
-  //        10.0f, -10.0f,  10.0f,
-  //       -10.0f, -10.0f,  10.0f,
-  //
-  //       -10.0f,  10.0f, -10.0f,
-  //        10.0f,  10.0f, -10.0f,
-  //        10.0f,  10.0f,  10.0f,
-  //        10.0f,  10.0f,  10.0f,
-  //       -10.0f,  10.0f,  10.0f,
-  //       -10.0f,  10.0f, -10.0f,
-  //
-  //       -10.0f, -10.0f, -10.0f,
-  //       -10.0f, -10.0f,  10.0f,
-  //        10.0f, -10.0f, -10.0f,
-  //        10.0f, -10.0f, -10.0f,
-  //       -10.0f, -10.0f,  10.0f,
-  //        10.0f, -10.0f,  10.0f};
-
-  model sky_model = model_loader::obj(m_resource_path + "models/skybox.obj", model::NORMAL);
-  // generate vertex array object
-  glGenVertexArrays(1, &sky_object.vertex_AO);
-  // bind the array for attaching buffers
-  glBindVertexArray(sky_object.vertex_AO);
-  // generate generic buffer
-  glGenBuffers(1, &sky_object.vertex_BO);
-  // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ARRAY_BUFFER, sky_object.vertex_BO);
-  // configure currently bound array buffer
-  glBufferData(GL_ARRAY_BUFFER, sky_model.data.size() * sizeof(float), sky_model.data.data(), GL_STATIC_DRAW);
-
-    // activate first attribute on gpu
-  glEnableVertexAttribArray(0);
-  // first attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, skybox_model.vertex_bytes, skybox_model.offsets[model::POSITION]);
-   // activate third attribute on gpu
-  // glEnableVertexAttribArray(1);
-  // // third attribute is 2 floats with no offset & stride
-  // glVertexAttribPointer(1, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::TEXCOORD]);
-  // // activate first attribute on gpu
-  // glEnableVertexAttribArray(0);
-  // // first attribute is 3 floats with no offset & stride
-  // glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
-  // // activate second attribute on gpu
-  // glEnableVertexAttribArray(1);
-  // // first attribute is 3 floats with no offset & stride
-  // glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
-  // generate generic buffer
-  glGenBuffers(1, &sky_object.element_BO);
-  // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sky_object.element_BO);
-  // configure currently bound array buffer
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * sky_model.indices.size(), sky_model.indices.data(), GL_STATIC_DRAW);
-  //store type of primitive to draw
-  sky_object.draw_mode = GL_TRIANGLE_STRIP;
-  // transfer number of indices to model object
-  sky_object.num_elements = GLsizei(sky_model.indices.size());
-}
-
-
-
-void ApplicationSolar::initializeTextures(std::vector<std::pair<std::string, pixel_data>> tex_files){
-  for (auto i: tex_files)
-  {
-    std::string tmp_string = i.first;
-    pixel_data tmp_px_dt = i.second;
-    //    std::vector<pair<std::string, GLuint>> tex_handle;
-    GLuint tex_handle;
+void ApplicationSolar::initializeTextures(){
+  for(int i = 0; i < planet_textures.size(); i++){
+    texture_object tex_h;
     glActiveTexture(GL_TEXTURE0);
-    glGenTextures(1, &tex_handle);
-    glBindTexture(GL_TEXTURE_2D, tex_handle);
+    glGenTextures(1, &tex_h.handle);
+    glBindTexture(GL_TEXTURE_2D, tex_h.handle);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, tmp_px_dt.channels, tmp_px_dt.width, tmp_px_dt.height, 0,
-                tmp_px_dt.channels, tmp_px_dt.channel_type, tmp_px_dt.ptr());
-
-    handles_.insert(std::make_pair(tmp_string, tex_handle));
+    glTexImage2D(GL_TEXTURE_2D, 0, planet_textures[0].pixelDats_.channels, planet_textures[0].pixelDats_.width, planet_textures[0].pixelDats_.height, 0, planet_textures[0].pixelDats_.channels, planet_textures[0].pixelDats_.channel_type, planet_textures[0].pixelDats_.ptr());
+    texture_obj_container.push_back(tex_h);
     }
-    // glActiveTexture(GL_TEXTURE1);
-    // glGenTextures(1, &sky_sphere_tex_obj);
-    // glBindTexture(GL_TEXTURE_2D, sky_sphere_tex_obj);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // glTexImage2D(GL_TEXTURE_2D, 0, sky_sphere_texture.channels, sky_sphere_texture.width, sky_sphere_texture.height, 0,
-    //             sky_sphere_texture.channels, sky_sphere_texture.channel_type, sky_sphere_texture.ptr());
-
 }
 
-GLuint ApplicationSolar::initTexObj(pixel_data tex_data_in){
-  glActiveTexture(GL_TEXTURE0);
-  GLuint tex_handle;
-  glGenTextures(1, &tex_handle);
-  glBindTexture(GL_TEXTURE_2D, tex_handle);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, tex_data_in.channels, tex_data_in.width, tex_data_in.height, 0,
-              tex_data_in.channels, tex_data_in.channel_type, tex_data_in.ptr());
-              std::cout << "init callme cbabytextures sun" <<"\n";
-  return tex_handle;
-}
 
 void ApplicationSolar::loadTextures(){
-  std::vector<pair<std::string, pixel_data>> tex_files;
-    tex_files.push_back({"Sky", texture_loader::file("../resources/textures/sky_sphere.png")});
-    tex_files.push_back({"Sun", texture_loader::file("../resources/textures/sunmap.png")});
-    tex_files.push_back({"Merkur", texture_loader::file("../resources/textures/mercurymap.png")});
-    tex_files.push_back({"Venus", texture_loader::file("../resources/textures/venusmap.png")});
-    tex_files.push_back({"Erde", texture_loader::file("../resources/textures/earthmap1k.png")});
-    tex_files.push_back({"Mond", texture_loader::file("../resources/textures/moonmap1k.png")});
-    tex_files.push_back({"Mars", texture_loader::file("../resources/textures/marsmap1k.png")});
-    tex_files.push_back({"Jupiter", texture_loader::file("../resources/textures/jupitermap.png")});
-    tex_files.push_back({"Saturn", texture_loader::file("../resources/textures/saturnmap.png")});
-    tex_files.push_back({"Uranus", texture_loader::file("../resources/textures/uranusmap.png")});
-    tex_files.push_back({"Neptun", texture_loader::file("../resources/textures/neptunemap.png")});
+    {texture tex1 ("Sky", texture_loader::file("../resources/textures/planets/sky_sphere.png"));
+    planet_textures.push_back(tex1);}
+    {texture tex1 ("Sun", texture_loader::file("../resources/textures/planets/sunmap.png"));
+    planet_textures.push_back(tex1);}
+    {texture tex1 ("Merkur", texture_loader::file("../resources/textures/planets/mercurymap.png"));
+    planet_textures.push_back(tex1);}
+    {texture tex1 ("Venus", texture_loader::file("../resources/textures/planets/venusmap.png"));
+    planet_textures.push_back(tex1);}
+    {texture tex1 ("Erde", texture_loader::file("../resources/textures/planets/earthmap1k.png"));
+    planet_textures.push_back(tex1);}
+    {texture tex1 ("Mond", texture_loader::file("../resources/textures/planets/moonmap1k.png"));
+    planet_textures.push_back(tex1);}
+    {texture tex1 ("Mars", texture_loader::file("../resources/textures/planets/marsmap1k.png"));
+    planet_textures.push_back(tex1);}
+    {texture tex1 ("Jupiter", texture_loader::file("../resources/textures/planets/jupitermap.png"));
+    planet_textures.push_back(tex1);}
+    {texture tex1 ("Saturn", texture_loader::file("../resources/textures/planets/saturnmap.png"));
+    planet_textures.push_back(tex1);}
+    {texture tex1 ("Uranus", texture_loader::file("../resources/textures/planets/uranusmap.png"));
+    planet_textures.push_back(tex1);}
+    {texture tex1 ("Neptun", texture_loader::file("../resources/textures/planets/neptunemap.png"));
+    planet_textures.push_back(tex1);}
 
-    initializeTextures(tex_files);
-
-    sky_sphere_texture = texture_loader::file("../resources/textures/sky_sphere.png");
-
+    {texture tex1 ("Front", texture_loader::file("../resources/textures/skybox/front.png"));
+    skybox_textures.push_back(tex1);}
+    {texture tex1 ("Back", texture_loader::file("../resources/textures/skybox/back.png"));
+    skybox_textures.push_back(tex1);}
+    {texture tex1 ("Top", texture_loader::file("../resources/textures/skybox/top.png"));
+    skybox_textures.push_back(tex1);}
+    {texture tex1 ("Bottom", texture_loader::file("../resources/textures/skybox/bottom.png"));
+    skybox_textures.push_back(tex1);}
+    {texture tex1 ("Left", texture_loader::file("../resources/textures/skybox/left.png"));
+    skybox_textures.push_back(tex1);}
+    {texture tex1 ("Right", texture_loader::file("../resources/textures/skybox/right.png"));
+    skybox_textures.push_back(tex1);}
 }
 
 void ApplicationSolar::initializePlanets(){
@@ -331,8 +200,8 @@ void ApplicationSolar::initializePlanets(){
 
   Node* RootNode      =  new Node("RootOfTheUniverse");
   scene    =  Scenegraph("solarsystem", RootNode);
-  auto sun_handle =  handles_.find("Sun")->second;
-  Geometrynode* sun   =  new Geometrynode("sun", 0.10f, 0.0f, 0.0f, {0.7,0.0, 0.52}, sun_handle);
+  auto sun_handle =  planet_textures[0].pixelDats_.ptr();
+  Geometrynode* sun   =  new Geometrynode("sun", 0.10f, 0.0f, 0.0f, {0.7,0.0, 0.52}, planet_textures[0].pixelDats_);
 
   RootNode->addChildren(sun);
 
@@ -347,6 +216,7 @@ void ApplicationSolar::initializePlanets(){
     sun->addChildren(planet);
   }
 }
+
 // load shader sources
 void ApplicationSolar::initializeShaderPrograms() {
   // store shader program objects in container
@@ -392,7 +262,7 @@ void ApplicationSolar::initializeShaderPrograms() {
 void ApplicationSolar::initializeGeometry() {
 
   // //-----------------Orbits------------------------
-  // orbit_model = model{m_orbits, (model::POSITION ), {0}};
+  // orbit_model = model{orbits_, (model::POSITION ), {0}};
   //
   // // generate vertex array object
   // glGenVertexArrays(1, &orbit_object.vertex_AO);
@@ -460,7 +330,7 @@ void ApplicationSolar::initializeGeometry() {
   planet_object.num_elements = GLsizei(planet_model.indices.size());
 
   //------------------Stars--------------------
-  star_model = model{Stars, (model::POSITION + model::NORMAL), {0}};
+  star_model = model{stars_, (model::POSITION + model::NORMAL), {0}};
 
   // generate vertex array objectgl mirrored repeat
   glGenVertexArrays(1, &star_object.vertex_AO);
@@ -496,47 +366,53 @@ void ApplicationSolar::initializeGeometry() {
 
 
 
-  // //-----Skybox------------
-  // //sky_model = model_loader::obj(m_resource_path + "models/skybox.obj", model::NORMAL);
-  // // generate vertex array object
-  // glGenVertexArrays(1, &sky_object.vertex_AO);
-  // // bind the array for attaching buffers
-  // glBindVertexArray(sky_object.vertex_AO);
-  // // generate generic buffer
-  // glGenBuffers(1, &sky_object.vertex_BO);
-  // // bind this as an vertex array buffer containing all attributes
-  // glBindBuffer(GL_ARRAY_BUFFER, sky_object.vertex_BO);
-  // // configure currently bound array buffer
-  // glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Quad_vector.size(), Quad_vector.data(), GL_STATIC_DRAW);
-  // // activate first attribute on gpu
-  // glEnableVertexAttribArray(0);
-  // // first attribute is 3 floats with no offset & stride
-  // glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
-  // // generate generic buffer
-  // glGenBuffers(1, &sky_object.element_BO);
-  // // bind this as an vertex array buffer containing all attributes
-  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sky_object.element_BO);
-  // // configure currently bound array buffer
-  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * sky_model.indices.size(), sky_model.indices.data(), GL_STATIC_DRAW);
-  // // store type of primitive to draw
-  // sky_object.draw_mode = GL_TRIANGLE_STRIP;
-  // // transfer number of indices to model object
-  // sky_object.num_elements = GLsizei(Quad_vector.size()/5);
-  // std::cout<<"sky-geo-int-complete"<<"\n";
+  //-----Skybox------------
+  sky_model = model_loader::obj(m_resource_path + "models/skybox.obj", model::NORMAL);
+  // generate vertex array object
+  glGenVertexArrays(1, &sky_object.vertex_AO);
+  // bind the array for attaching buffers
+  glBindVertexArray(sky_object.vertex_AO);
+  // generate generic buffer
+  glGenBuffers(1, &sky_object.vertex_BO);
+  // bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ARRAY_BUFFER, sky_object.vertex_BO);
+  // configure currently bound array buffer
+  glBufferData(GL_ARRAY_BUFFER, sky_model.data.size() * sizeof(float), sky_model.data.data(), GL_STATIC_DRAW);
+
+  // activate first attribute on gpu
+  glEnableVertexAttribArray(0);
+  // first attribute is 3 floats with no offset & stride
+  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, sky_model.vertex_bytes, sky_model.offsets[model::POSITION]);
+  // generate generic buffer
+  glGenBuffers(1, &sky_object.element_BO);
+  // bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sky_object.element_BO);
+  // configure currently bound array buffer
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * sky_model.indices.size(), sky_model.indices.data(), GL_STATIC_DRAW);
+  // store type of primitive to draw
+  sky_object.draw_mode = GL_TRIANGLES;
+  // transfer number of indices to model object
+  sky_object.num_elements = GLsizei(sky_model.indices.size());
+  std::cout<<"sky-geo-int-complete"<<"\n";
+  }
+
+
+
+
 
 }
 
 void ApplicationSolar::render() const{
   renderSky();
-//  renderStars();
+  renderStars();
   renderSolarsystem();
 }
 
 
 void ApplicationSolar::initializeSkyBoxTex(){
   glActiveTexture(GL_TEXTURE0);
-  glGenTextures(1, &skybox.handle);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.handle);
+  glGenTextures(1, &sky_sphere_texture);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, sky_sphere_texture);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -544,9 +420,9 @@ void ApplicationSolar::initializeSkyBoxTex(){
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
   for(unsigned int idx = 0; idx < skybox_textures.size(); ++idx){
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + idx, 0, skybox_textures[idx].m_pixelData.channels, (GLsizei)skybox_textures[idx].m_pixelData.width,
-                (GLsizei)skybox_textures[idx].m_pixelData.height, 0, skybox_textures[idx].m_pixelData.channels,
-                 skybox_textures[idx].m_pixelData.channel_type, skybox_textures[idx].m_pixelData.ptr());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + idx, 0, skybox_textures[idx].pixelDats_.channels, (GLsizei)skybox_textures[idx].pixelDats_.width,
+                (GLsizei)skybox_textures[idx].pixelDats_.height, 0, skybox_textures[idx].pixelDats_.channels,
+                 skybox_textures[idx].pixelDats_.channel_type, skybox_textures[idx].pixelDats_.ptr());
   }
 
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
@@ -564,7 +440,7 @@ void ApplicationSolar::renderSky() const{
   glActiveTexture(GL_TEXTURE0);
 
   int color_sampler_location = glGetUniformLocation(m_shaders.at("sky").handle, "ColorTex");
-  glBindTexture(GL_TEXTURE_CUBE_MAP, texcube_obj);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_object.handle);
 //  glBindTexture(GL_TEXTURE_2D, texture_object);
   glUniform1i(color_sampler_location,0);
 
@@ -584,7 +460,7 @@ void ApplicationSolar::renderStars() const {
   glUniformMatrix4fv(m_shaders.at("stars").u_locs.at("ProjectionMatrix"),
                     1, GL_FALSE, glm::value_ptr(projection_matrix_));
   glPointSize(3.0);
-  glDrawArrays(star_object.draw_mode, 0, (int)Stars.size());
+  glDrawArrays(star_object.draw_mode, 0, (int)stars_.size());
 }
 
 void ApplicationSolar::renderOrbits() const {
@@ -592,7 +468,7 @@ void ApplicationSolar::renderOrbits() const {
   glUseProgram(m_shaders.at("orbits").handle);
   glBindVertexArray(orbit_object.vertex_AO);
   glLineWidth(40.0);
-  glDrawArrays(orbit_object.draw_mode, 0, (int)m_orbits.size());
+  glDrawArrays(orbit_object.draw_mode, 0, (int)orbits_.size());
 }
 
 void ApplicationSolar::renderSolarsystem() const{
