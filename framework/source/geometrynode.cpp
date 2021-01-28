@@ -37,6 +37,18 @@ Geometrynode::Geometrynode(string node_name, float size_in, float rotation_speed
   //cout<<"geometrynode mit allen parametern konstruiert\n";
 }
 
+// Geometrynode::Geometrynode(string node_name, float size_in, float rotation_speed_in, float distance_in, glm::vec3 color_in):
+//     Node{node_name},
+//     geometry_{},
+//     size_{size_in},
+//     rotation_speed_{rotation_speed_in},
+//     distance_{distance_in},
+//     color_{color_in},
+//     texture_{}
+// {
+//   //cout<<"geometrynode mit allen parametern konstruiert\n";
+// }
+
 
 
 model& Geometrynode::getGeometry(){

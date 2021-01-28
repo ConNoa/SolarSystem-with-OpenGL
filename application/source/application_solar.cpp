@@ -64,11 +64,18 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
       initializeStars();
       //initializeOrbits
       initializeGeometry();
+      std::cout << "init geo fin" <<"\n";
       initializeShaderPrograms();
-      initializePlanets();
+      std::cout << "init shd fin" <<"\n";
       loadTextures();               //f
-      initializeTextures();         //f
+      std::cout << "load tex fin" <<"\n";
+      initializeTextures();
+      std::cout << "init tex fin" <<"\n";
+      initializePlanets();
+      std::cout << "init pl fin" <<"\n";
       initializeSkybox();           //f
+      std::cout << "init skbx fin" <<"\n";
+
     }
 
 
@@ -127,9 +134,6 @@ void ApplicationSolar::initializeSkybox(){
 }
 
 
-
-
-
 void ApplicationSolar::initializeTextures(){
   for(int i = 0; i < planet_textures.size(); i++){
     texture_object tex_h;
@@ -147,9 +151,14 @@ void ApplicationSolar::initializeTextures(){
 
 
 void ApplicationSolar::loadTextures(){
-    {texture tex1 ("Sky", texture_loader::file("../resources/textures/planets/sky_sphere.png"));
-    planet_textures.push_back(tex1);}
+  std::cout<<"Planet-textures-start- looooading"<<"\n";
+
+    // {texture tex1 ("Sky", texture_loader::file("../resources/textures/planets/sky_sphere.png"));
+    // planet_textures.push_back(tex1);}
     {texture tex1 ("Sun", texture_loader::file("../resources/textures/planets/sunmap.png"));
+
+    std::cout<<"Planet-textures-start- looooading"<<"\n";
+
     planet_textures.push_back(tex1);}
     {texture tex1 ("Merkur", texture_loader::file("../resources/textures/planets/mercurymap.png"));
     planet_textures.push_back(tex1);}
@@ -159,6 +168,8 @@ void ApplicationSolar::loadTextures(){
     planet_textures.push_back(tex1);}
     {texture tex1 ("Mond", texture_loader::file("../resources/textures/planets/moonmap1k.png"));
     planet_textures.push_back(tex1);}
+    std::cout<<"Planet-textures-start- looooading"<<"\n";
+
     {texture tex1 ("Mars", texture_loader::file("../resources/textures/planets/marsmap1k.png"));
     planet_textures.push_back(tex1);}
     {texture tex1 ("Jupiter", texture_loader::file("../resources/textures/planets/jupitermap.png"));
@@ -170,17 +181,19 @@ void ApplicationSolar::loadTextures(){
     {texture tex1 ("Neptun", texture_loader::file("../resources/textures/planets/neptunemap.png"));
     planet_textures.push_back(tex1);}
 
-    {texture tex1 ("Front", texture_loader::file("../resources/textures/skybox/front.png"));
+    std::cout<<"Planet-textures-loaded"<<"\n";
+
+    {texture tex1 ("Front", texture_loader::file("../resources/textures/skybox/Z_pos_front.png"));
     skybox_textures.push_back(tex1);}
-    {texture tex1 ("Back", texture_loader::file("../resources/textures/skybox/back.png"));
+    {texture tex1 ("Back", texture_loader::file("../resources/textures/skybox/Z_neg_back.png"));
     skybox_textures.push_back(tex1);}
-    {texture tex1 ("Top", texture_loader::file("../resources/textures/skybox/top.png"));
+    {texture tex1 ("Top", texture_loader::file("../resources/textures/skybox/Y_pos_top.png"));
     skybox_textures.push_back(tex1);}
-    {texture tex1 ("Bottom", texture_loader::file("../resources/textures/skybox/bottom.png"));
+    {texture tex1 ("Bottom", texture_loader::file("../resources/textures/skybox/Y_neg_bottom.png"));
     skybox_textures.push_back(tex1);}
-    {texture tex1 ("Left", texture_loader::file("../resources/textures/skybox/left.png"));
+    {texture tex1 ("Left", texture_loader::file("../resources/textures/skybox/X_pos_left.png"));
     skybox_textures.push_back(tex1);}
-    {texture tex1 ("Right", texture_loader::file("../resources/textures/skybox/right.png"));
+    {texture tex1 ("Right", texture_loader::file("../resources/textures/skybox/X_neg_right.png"));
     skybox_textures.push_back(tex1);}
 }
 
@@ -200,8 +213,8 @@ void ApplicationSolar::initializePlanets(){
 
   Node* RootNode      =  new Node("RootOfTheUniverse");
   scene    =  Scenegraph("solarsystem", RootNode);
-  auto sun_handle =  planet_textures[0].pixelDats_.ptr();
-  Geometrynode* sun   =  new Geometrynode("sun", 0.10f, 0.0f, 0.0f, {0.7,0.0, 0.52}, planet_textures[0].pixelDats_);
+  GLuint sun_handle =  texture_obj_container[0].handle;
+  Geometrynode* sun   =  new Geometrynode("sun", 0.10f, 0.0f, 0.0f, {0.7,0.0, 0.52}, sun_handle);
 
   RootNode->addChildren(sun);
 
@@ -211,7 +224,7 @@ void ApplicationSolar::initializePlanets(){
                                             solarsystem_planets_[i].rotation_speed,
                                             solarsystem_planets_[i].distance,
                                             solarsystem_planets_[i].color,
-                                            handles_.find(solarsystem_planets_[i].name)->second);
+                                            texture_obj_container[i+1].handle);
     planet->setGeometry(planet_model);
     sun->addChildren(planet);
   }
@@ -397,11 +410,6 @@ void ApplicationSolar::initializeGeometry() {
   }
 
 
-
-
-
-}
-
 void ApplicationSolar::render() const{
   renderSky();
   renderStars();
@@ -409,25 +417,6 @@ void ApplicationSolar::render() const{
 }
 
 
-void ApplicationSolar::initializeSkyBoxTex(){
-  glActiveTexture(GL_TEXTURE0);
-  glGenTextures(1, &sky_sphere_texture);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, sky_sphere_texture);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-  for(unsigned int idx = 0; idx < skybox_textures.size(); ++idx){
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + idx, 0, skybox_textures[idx].pixelDats_.channels, (GLsizei)skybox_textures[idx].pixelDats_.width,
-                (GLsizei)skybox_textures[idx].pixelDats_.height, 0, skybox_textures[idx].pixelDats_.channels,
-                 skybox_textures[idx].pixelDats_.channel_type, skybox_textures[idx].pixelDats_.ptr());
-  }
-
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
-}
 
 
 
