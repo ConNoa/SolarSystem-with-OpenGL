@@ -6,7 +6,6 @@
 #include "model_loader.hpp"
 #include "texture_loader.hpp"
 
-
 #include <glbinding/gl/gl.h>
 #include <glm/gtx/string_cast.hpp>
 // use gl definitions from glbinding
@@ -22,7 +21,6 @@ using namespace gl;
 #include <iostream>
 
 
-
 ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  :Application{resource_path}
  ,planet_object{}
@@ -34,31 +32,6 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,projection_matrix_{utils::calculate_projection_matrix(initial_aspect_ratio)}
  ,shader_mode {3.0f}
    {
-    //  test_image = texture_loader::file("../resources/textures/sky_sphere.png");
-    //
-    //  char* f = "../resources/textures/front.png";
-    //  char* ba = "../resources/textures/back.png";
-    //  char* t = "../resources/textures/top.png";
-    //  char* bo = "../resources/textures/bottom.png";
-    //  char* le = "../resources/textures/left.png";
-    //  char* ri = "../resources/textures/right.png";
-    //
-    //
-     //
-    //  create_cube_map(f, ba, t, bo, le, ri, &texcube_obj);
-    //  box_coords = {-1,-1; 1,-1; 1,1; -1,1};
-     //
-    //  glActiveTexture(GL_TEXTURE0);
-    //  glGenTextures(1, &texture_object);
-    //  glBindTexture(GL_TEXTURE_2D, texture_object);
-    //  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    //  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    //      glTexImage2D(GL_TEXTURE_2D, 0, test_image.channels, test_image.width, test_image.height, 0,
-    //              test_image.channels, test_image.channel_type, test_image.ptr());
-    //        std::cout << "init test-tuexture" <<"\n";
-     //
 
       initializeLabels();
       initializeStars();
@@ -78,13 +51,11 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
 
     }
 
-
 ApplicationSolar::~ApplicationSolar() {
   glDeleteBuffers(1, &planet_object.vertex_BO);
   glDeleteBuffers(1, &planet_object.element_BO);
   glDeleteVertexArrays(1, &planet_object.vertex_AO);
 }
-
 
 void ApplicationSolar::initializeLabels(){
   Labels.push_back("sky");
@@ -92,8 +63,6 @@ void ApplicationSolar::initializeLabels(){
   Labels.push_back("stars");
   Labels.push_back("orbits");
 }
-
-
 
 void ApplicationSolar::initializeStars(){
   //Erstellung eines Sterne-Vektors mit positions und farbangaben
@@ -456,10 +425,6 @@ void ApplicationSolar::render() const{
   renderSolarsystem();
 }
 
-
-
-
-
 void ApplicationSolar::renderSky() const{
   glDepthMask(GL_FALSE);
 
@@ -470,7 +435,7 @@ void ApplicationSolar::renderSky() const{
 
   int color_sampler_location = glGetUniformLocation(m_shaders.at("sky").handle, "ColorTex");
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_object.handle);
-//  glBindTexture(GL_TEXTURE_2D, texture_object);
+      //  glBindTexture(GL_TEXTURE_2D, texture_object);
   glUniform1i(color_sampler_location,0);
 
   glBindVertexArray(sky_object.vertex_AO);
@@ -480,7 +445,7 @@ void ApplicationSolar::renderSky() const{
 }
 
 void ApplicationSolar::renderStars() const {
-  // bind shader to upload uniforms
+      // bind shader to upload uniforms
   glm::fmat4 view_matrix = glm::inverse(view_matrix_);
   glUseProgram(m_shaders.at("stars").handle);
   glBindVertexArray(star_object.vertex_AO);
@@ -541,7 +506,7 @@ void ApplicationSolar::renderPlanets(Geometrynode* gn) const {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, gn->getTexture());
     glUniform1i(m_shaders.at("planet").u_locs.at("Planets_Texture"),0);
-//    glUniform4f(gn->getTexture, 2,1,0,0);
+      //    glUniform4f(gn->getTexture, 2,1,0,0);
 
     glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
   }
@@ -592,11 +557,11 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   }
   else if (key == GLFW_KEY_V  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     std::cout << "View mat: "<<"\n";
-std::cout << glm::to_string(view_matrix_) << std::endl;
+    std::cout << glm::to_string(view_matrix_) << std::endl;
   }
   else if (key == GLFW_KEY_P  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     std::cout << "Projection mat: " <<"\n";
-std::cout << glm::to_string(projection_matrix_) << std::endl;
+    std::cout << glm::to_string(projection_matrix_) << std::endl;
   }
   else if (key == GLFW_KEY_1  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     shader_mode = 1;
