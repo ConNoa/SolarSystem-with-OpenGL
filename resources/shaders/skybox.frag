@@ -1,26 +1,14 @@
-// #version 150
-//
-// precision mediump float;
-//
-// smooth in  vec3 pass_TexCoord;
-//
-// uniform samplerCube ColorTex;
-//
-// out vec4 out_Color;
-//
-//
-// void main() {
-//   out_Color = texture(ColorTex, vec3(pass_TexCoord));
-// }
+#version 150
 
+precision mediump float;
 
-#version 330
-uniform samplerCube uTexture;
+smooth in  vec3 pass_TexCoord;
 
-smooth in vec3 eyeDirection;
+uniform samplerCube ColorTex;
 
-out vec4 fragmentColor;
+out vec4 out_Color;
+
 
 void main() {
-    fragmentColor = texture(uTexture, eyeDirection);
+  out_Color = texture(ColorTex, vec3(pass_TexCoord));
 }
