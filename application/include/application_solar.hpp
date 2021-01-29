@@ -33,7 +33,8 @@ class ApplicationSolar : public Application {
     void renderSolarsystem() const; //executes  renderPlanets() for Planets & Sun
     void renderPlanets(Geometrynode* gn) const;
     void renderStars() const;
-    void renderOrbits() const;//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch
+    void renderOrbits() const;
+    
     void renderSky() const;
 
 
@@ -41,7 +42,7 @@ class ApplicationSolar : public Application {
     GLuint initTexObj(pixel_data tex_data_in);
     void initializeStars();
     void initializeOrbits();
-    void initializeSkybox();//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch//fehlt noch
+    void initializeSkybox();
 
 
     void initializeLabels();
@@ -55,12 +56,6 @@ class ApplicationSolar : public Application {
     void initializeShaderPrograms();
     void initializeGeometry();
     void initializePointlights();
-//-------------------------------------------------------
-//     void create_cube_map(const char* front, const char* back, const char* top,
-//                           const char* bottom, const char* left,const char* right,GLuint* tex_cube);
-//
-//     bool load_cube_map_side(GLuint texture, GLenum side_target, const char* file_name);
-// //-------------------------------------------------------
 
     // update uniform values
     void uploadUniforms();
@@ -68,7 +63,6 @@ class ApplicationSolar : public Application {
     void uploadProjection(std::string const& object);
     // upload view matrix
     void uploadView(std::string const& object);
-
 
 
     // cpu representation of model
@@ -101,20 +95,9 @@ class ApplicationSolar : public Application {
     std::vector<texture> skybox_textures;
     std::vector<texture_object>texture_obj_container;
 
-    //std::map<std::string, GLuint>  handles_;
-
     texture_object skybox_object;
 
-    //DEBUG
-    // GLuint sky_sphere_tex_obj;
-    // GLuint texcube_obj;
-    //
-    // glm::vec4 box_coords;
-    //
-    // pixel_data test_image;
      pixel_data sky_sphere_texture;
-
-  //  std::vector<float> Quad_vector= {-1.0f,-1.0f,0.0f,0.0f,0.0f,1.0f,-1.0f,0.0f,1.0f,0.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,1.0f,1.0f,0.0f,1.0f,1.0f};
 
 };
 
