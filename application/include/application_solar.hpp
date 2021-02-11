@@ -34,8 +34,9 @@ class ApplicationSolar : public Application {
     void renderPlanets(Geometrynode* gn) const;
     void renderStars() const;
     void renderOrbits() const;
-    
+
     void renderSky() const;
+    void renderFrameBuffer() const;
 
 
   protected:
@@ -96,8 +97,17 @@ class ApplicationSolar : public Application {
     std::vector<texture_object>texture_obj_container;
 
     texture_object skybox_object;
+    pixel_data sky_sphere_texture;
 
-     pixel_data sky_sphere_texture;
+
+    model_object quad_object;
+
+    model quad_model;
+    glm::vec4 pp_mode;
+
+    texture_object frame_buffer_object;
+    texture_object frame_buffer_tex_obj;
+    texture_object render_buffer_object;
 
 };
 
