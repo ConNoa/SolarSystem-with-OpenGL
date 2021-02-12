@@ -280,7 +280,7 @@ void ApplicationSolar::initializeShaderPrograms() {
           // m_shaders.at("quad").u_locs["horizont_bool"] = -1;
           // m_shaders.at("quad").u_locs["vert_bool"] = -1;
           //m_shaders.at("quad").u_locs["blur_bool"] = -1;
-          m_shaders.at("quad").u_locs["YourTexture"]=-1;
+          m_shaders.at("quad").u_locs["ColorTex"]=-1;
           m_shaders.at("quad").u_locs["PostProcessing_Mode"]=-1;
 
 }
@@ -647,6 +647,46 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   }
   else if (key == GLFW_KEY_3  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     shader_mode = 3;
+  }
+  else if (key == GLFW_KEY_6  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.x == 0) {
+    pp_mode.x = 1;
+    std::cout << "BLACKWHITE ACTIVE: " <<"\n";
+
+  }
+  else if (key == GLFW_KEY_6  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.x == 1) {
+    pp_mode.x = 0;
+    std::cout << "BLACKWHITE IN-ACTIVE: " <<"\n";
+
+  }
+  else if (key == GLFW_KEY_7  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.y == 0) {
+    pp_mode.y = 1;
+    std::cout << "H-MIRROR ACTIVE: " <<"\n";
+
+  }
+  else if (key == GLFW_KEY_7  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.y == 1) {
+    pp_mode.y = 0;
+    std::cout << "H-MIRROR IN-ACTIVE: " <<"\n";
+
+  }
+  else if (key == GLFW_KEY_8  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.z == 0) {
+    pp_mode.z = 1;
+    std::cout << "V-MIRROR ACTIVE: " <<"\n";
+
+  }
+  else if (key == GLFW_KEY_8  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.z == 1) {
+    pp_mode.z = 0;
+    std::cout << "V-MIRROR IN-ACTIVE: " <<"\n";
+
+  }
+  else if (key == GLFW_KEY_9  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.w == 0) {
+    pp_mode.w = 1;
+    std::cout << "BLUR ACTIVE: " <<"\n";
+
+  }
+  else if (key == GLFW_KEY_9  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.w == 1) {
+    pp_mode.w = 0;
+    std::cout << "BLUR IN-ACTIVE: " <<"\n";
+
   }
 }
 
