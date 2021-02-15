@@ -280,8 +280,9 @@ void ApplicationSolar::initializeShaderPrograms() {
           // m_shaders.at("quad").u_locs["horizont_bool"] = -1;
           // m_shaders.at("quad").u_locs["vert_bool"] = -1;
           //m_shaders.at("quad").u_locs["blur_bool"] = -1;
-          m_shaders.at("quad").u_locs["ColorTex"]=-1;
           m_shaders.at("quad").u_locs["PostProcessing_Mode"]=-1;
+
+          m_shaders.at("quad").u_locs["ColorTex"]=-1;
 
 }
 
@@ -318,6 +319,7 @@ void ApplicationSolar::initializeGeometry() {
   // // transfer number of indices to model object
   // orbit_object.num_elements = GLsizei(orbit_model.indices.size());
 
+  quad_model =   model_loader::obj(m_resource_path + "models/quad.obj", model::TEXCOORD);
 
   //-----------Planets--------------------------
   planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL|model::TEXCOORD);
@@ -425,6 +427,7 @@ void ApplicationSolar::initializeGeometry() {
 
 
   //  framebufferquad
+
   glGenVertexArrays(1,&quad_object.vertex_AO);
   glBindVertexArray(quad_object.vertex_AO);
   glGenBuffers(1, &quad_object.vertex_BO);
@@ -474,12 +477,15 @@ void ApplicationSolar::initializeFramebuffer(){
  glDrawBuffers(1, draw_buffers);
 
  if(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
-    std::cout<<"framebuffer init fail\n";
+    std::cout<<"framebuffer initialization failed\n";
  }
 }
 
 
 void ApplicationSolar::render() const{
+  glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object.handle);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
   renderSky();
   //renderStars();
   renderSolarsystem();
@@ -494,10 +500,13 @@ void ApplicationSolar::renderFrameBuffer()  const{
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, frame_buffer_tex_obj.handle);
-  glUniform1i(m_shaders.at("quad").u_locs.at("YourTexture"), 0);
+  glUniform1i(m_shaders.at("quad").u_locs.at("ColorTex"), 0);
   glBindVertexArray(quad_object.vertex_AO);
+//  std::cout<<"framebuffer render 1\n";
+
   glUniform4f(m_shaders.at("quad").u_locs.at("PostProcessing_Mode"), pp_mode.x, pp_mode.y, pp_mode.z, pp_mode.w);
   glDrawArrays(quad_object.draw_mode, 0, quad_object.num_elements);
+//  std::cout<<"framebuffer render 2\n";
 
 }
 
@@ -651,7 +660,7 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   else if (key == GLFW_KEY_6  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.x == 0) {
     pp_mode.x = 1;
     std::cout << "BLACKWHITE ACTIVE: " <<"\n";
-
+    uploadUniforms();
   }
   else if (key == GLFW_KEY_6  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.x == 1) {
     pp_mode.x = 0;
