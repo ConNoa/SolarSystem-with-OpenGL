@@ -512,9 +512,6 @@ void ApplicationSolar::renderFrameBuffer()  const{
 
 void ApplicationSolar::renderSky() const{
   glDepthMask(GL_FALSE);
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
   glUseProgram(m_shaders.at("sky").handle);
   glActiveTexture(GL_TEXTURE0);
 
@@ -657,42 +654,41 @@ void ApplicationSolar::keyCallback(int key, int action, int mods) {
   else if (key == GLFW_KEY_3  && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
     shader_mode = 3;
   }
-  else if (key == GLFW_KEY_6  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.x == 0) {
+  else if (key == GLFW_KEY_7  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.x == 0) {
     pp_mode.x = 1;
     std::cout << "BLACKWHITE ACTIVE: " <<"\n";
-    uploadUniforms();
   }
-  else if (key == GLFW_KEY_6  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.x == 1) {
+  else if (key == GLFW_KEY_7  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.x == 1) {
     pp_mode.x = 0;
     std::cout << "BLACKWHITE IN-ACTIVE: " <<"\n";
-
   }
-  else if (key == GLFW_KEY_7  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.y == 0) {
+
+  else if (key == GLFW_KEY_8  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.y == 0) {
     pp_mode.y = 1;
     std::cout << "H-MIRROR ACTIVE: " <<"\n";
 
   }
-  else if (key == GLFW_KEY_7  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.y == 1) {
+  else if (key == GLFW_KEY_8  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.y == 1) {
     pp_mode.y = 0;
     std::cout << "H-MIRROR IN-ACTIVE: " <<"\n";
 
   }
-  else if (key == GLFW_KEY_8  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.z == 0) {
+  else if (key == GLFW_KEY_9  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.z == 0) {
     pp_mode.z = 1;
     std::cout << "V-MIRROR ACTIVE: " <<"\n";
 
   }
-  else if (key == GLFW_KEY_8  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.z == 1) {
+  else if (key == GLFW_KEY_9  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.z == 1) {
     pp_mode.z = 0;
     std::cout << "V-MIRROR IN-ACTIVE: " <<"\n";
 
   }
-  else if (key == GLFW_KEY_9  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.w == 0) {
+  else if (key == GLFW_KEY_0  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.w == 0) {
     pp_mode.w = 1;
     std::cout << "BLUR ACTIVE: " <<"\n";
 
   }
-  else if (key == GLFW_KEY_9  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.w == 1) {
+  else if (key == GLFW_KEY_0  && (action == GLFW_PRESS || action == GLFW_REPEAT) && pp_mode.w == 1) {
     pp_mode.w = 0;
     std::cout << "BLUR IN-ACTIVE: " <<"\n";
 
